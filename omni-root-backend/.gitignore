@@ -1,0 +1,49 @@
+# Ambientes Virtuais Python
+.venv/
+env/
+venv/
+ENV/
+
+# Python Cache & Bytecode
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# Bancos de Dados Locais
+*.db
+*.sqlite
+*.sqlite3
+*.db-wal
+*.db-shm
+
+# Datasets e Imagens brutas (pesadas, não vão pro Git)
+/data/wood_raw/
+/dataset/
+
+# Pesos do YOLO e Artefatos do Treinamento
+*.pt
+/models/*.pt
+/models/*.zip
+/runs/
+
+# Binários do Go
+sync_daemon
+sync_daemon.exe
+sync_daemon_raspberry
+
+# Credenciais do Kaggle e Variáveis de Ambiente
+kaggle.json
+.env
+
+prompt.txt
+train/
+tests/resultados_teste/
+tests/runs/
+/capturas/
+# Export do modelo para CPU (gerado por exportar_modelo.py, ~170 MB)
+/models/*_openvino_model/
+/models/*_ncnn_model/
+/models/*.onnx
+kernel.errors.txt

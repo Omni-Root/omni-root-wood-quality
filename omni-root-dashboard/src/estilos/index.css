@@ -1,0 +1,21 @@
+/* Estilos do dashboard, um arquivo por área da tela. A ORDEM importa
+   (cascata do CSS): é a mesma do antigo theme.css. */
+@import './tokens.css'; /* Paleta e tokens de cor (tema claro, escuro e escolha manual). */
+@import './base.css'; /* Reset, corpo da página e largura do layout. */
+@import './cabecalho.css'; /* Faixa verde do cabeçalho e seus controles. */
+@import './controles.css'; /* Botões, menus suspensos, chip "Ao vivo" e botão de tema. */
+@import './login.css'; /* Tela de login. */
+@import './filtros.css'; /* Barra de filtros (período e máquina). */
+@import './paineis.css'; /* Grade de painéis, cartões de resumo, estados vazio/erro, mapa de calor. */
+@import './ultima-inspecao.css'; /* Cartão da última inspeção (ao vivo). */
+@import './tabela.css'; /* Tabela de qualidade por talhão e clone. */
+@import './camera.css'; /* Câmera ao vivo e dica curta de gráfico. */
+@import './voz.css'; /* Narração (texto para voz). */
+@import './avisos.css'; /* Aviso de reconexão e opções de painel. */
+@import './mapa.css'; /* Mapa de qualidade e "Onde agir". */
+@import './alertas.css'; /* Notificações: sino com os alertas de tendência ("supervisor no bolso"). */
+@import './atalhos.css'; /* Tamanho do texto, painéis recolhíveis, teclas de atalho e sua ajuda. */
+@import './usuarios.css'; /* Janelas de conta: "Usuários" (admin) e "Minha senha". */
+@import './identidade.css'; /* Visual do painel: barra lateral, barra superior, cartões, indicadores pastel. */
+@import './celular.css'; /* Ajustes para celular (layout, barra de navegação). */
+@import './acessibilidade.css'; /* Cor do resultado na última inspeção, modo daltônico e modo dislexia (por último: redefine tokens). */

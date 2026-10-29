@@ -1,0 +1,546 @@
+/* ============================================================
+   VISUAL DO PAINEL — estilo "admin dashboard" (barra lateral, barra
+   superior branca, cartões brancos arredondados com sombra suave,
+   indicadores em tons pastel), com a paleta da
+   John Deere. Tudo sai das variáveis de tokens.css: o tema escuro, o
+   daltônico (grafite + azul/laranja/vinho) e a dislexia continuam valendo
+   (celular.css e acessibilidade.css vêm depois e têm a última palavra).
+   Fonte: Plus Jakarta Sans, empacotada no projeto (funciona offline).
+   ============================================================ */
+
+:root {
+  --fonte-texto: 'Plus Jakarta Sans Variable', ui-sans-serif, 'Segoe UI', sans-serif;
+  --pad-x: 28px; /* respiro lateral da coluna de conteúdo */
+  --raio-cartao: 16px;
+  --sombra-cartao: 0 1px 2px rgba(17, 24, 15, 0.04), 0 8px 24px rgba(17, 24, 15, 0.06);
+  --largura-lateral: 264px;
+}
+
+/* No escuro sombra não aparece: os cartões se separam por uma borda sutil. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --sombra-cartao: 0 0 0 1px var(--border);
+  }
+}
+:root[data-theme='dark'] {
+  --sombra-cartao: 0 0 0 1px var(--border);
+}
+
+body {
+  font-family: var(--fonte-texto);
+}
+
+/* A coluna de conteúdo nunca cria rolagem lateral (no Windows, 100vw inclui
+   a barra de rolagem). `clip` não vira área de rolagem: o alerta fixo de
+   tendência continua grudando no topo. */
+#root {
+  overflow-x: clip;
+}
+
+/* ---- casca do app: barra lateral + conteúdo ---- */
+.app {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-height: 100vh;
+}
+
+.app .layout {
+  max-width: 1440px;
+  width: 100%;
+  min-width: 0;
+  margin: 0 auto;
+  padding: 0 var(--pad-x) 48px;
+}
+
+@media (min-width: 1025px) {
+  .app {
+    grid-template-columns: var(--largura-lateral) minmax(0, 1fr);
+  }
+}
+
+/* Celular: margem lateral menor e espaço para a barra de navegação fixa
+   do rodapé (estas regras vencem as de celular.css por especificidade). */
+@media (max-width: 640px) {
+  :root {
+    --pad-x: 12px;
+  }
+  .app .layout {
+    padding-bottom: 76px;
+  }
+}
+
+/* ---- barra lateral ---- */
+.barra-lateral {
+  display: none;
+}
+
+@media (min-width: 1025px) {
+  .barra-lateral {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    padding: 22px 16px 18px;
+    overflow-y: auto;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+  }
+}
+
+.bl-marca {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 2px 8px 6px;
+}
+
+/* Brasão (src/assets/logo-omniroot.png, fundo transparente): já tem moldura
+   e cores próprias, então sem quadrado de fundo atrás. */
+.bl-logo {
+  flex: none;
+  display: block;
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.18));
+}
+
+.bl-nome {
+  font-size: calc(21px * var(--escala-texto));
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+}
+
+.bl-nome b {
+  font-weight: 800;
+  color: var(--accent);
+}
+
+.bl-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.bl-grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.bl-grupo-titulo {
+  padding: 0 12px 4px;
+  font-size: calc(11px * var(--escala-texto));
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.bl-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  color: var(--text-secondary);
+  font-size: calc(14px * var(--escala-texto));
+  font-weight: 500;
+  text-decoration: none;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.bl-item:hover {
+  color: var(--text-primary);
+  background: var(--tint);
+}
+
+.bl-item.ativo {
+  color: var(--accent-contrast);
+  background: var(--accent);
+  font-weight: 600;
+  box-shadow: 0 8px 18px -10px color-mix(in srgb, var(--accent) 80%, transparent);
+}
+
+.bl-item > span {
+  flex: 1;
+  min-width: 0;
+}
+
+.bl-tecla {
+  min-width: 20px;
+  padding: 0 5px;
+  font-size: calc(11px * var(--escala-texto));
+  opacity: 0.7;
+}
+
+.bl-item.ativo .bl-tecla {
+  color: var(--accent);
+  background: var(--accent-contrast);
+  border-color: transparent;
+  opacity: 1;
+}
+
+.bl-dica {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: auto;
+  padding: 14px;
+  font: inherit;
+  text-align: left;
+  color: var(--text-secondary);
+  background: var(--tint);
+  border: 0;
+  border-radius: 14px;
+  cursor: pointer;
+}
+
+.bl-dica:hover {
+  background: var(--tint-strong);
+}
+
+.bl-dica strong {
+  display: block;
+  color: var(--text-primary);
+  font-size: calc(13px * var(--escala-texto));
+}
+
+.bl-dica span span,
+.bl-dica > span:last-child > span {
+  font-size: calc(12px * var(--escala-texto));
+}
+
+.bl-dica-icone {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  color: var(--accent);
+  background: var(--surface);
+}
+
+/* ---- barra superior (o antigo cabeçalho verde vira barra branca) ---- */
+.app .header {
+  margin: 0 calc(-1 * var(--pad-x)) 22px;
+  padding: 16px var(--pad-x);
+  color: var(--text-primary);
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  border-bottom: 1px solid var(--border);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  /* O desfoque torna a barra uma camada própria; sem um z-index alto, tudo
+     o que vem depois na página e tem camada (mapa, painéis, barra do
+     rodapé do celular) era desenhado POR CIMA dos menus que abrem aqui
+     (Notificações, Exportar, Acessibilidade, Voz, Menu do celular). Abaixo
+     só da ajuda de atalhos (3000), que cobre a tela toda. */
+  position: relative;
+  z-index: 1500;
+}
+
+/* Computador: barra superior numa linha só — o subtítulo encurta (…) antes
+   de os controles descerem; o texto auxiliar do "Ao vivo" sai em telas até
+   1500px (o estado "Ao vivo / Reconectando" fica sempre). O título nunca
+   fica mais estreito que "Qualidade da" (no máximo 2 linhas): sem espaço
+   nem para isso — janela estreita, zoom ou texto ampliado —, os controles
+   descem para a linha de baixo em vez de esmagar o título até sumir. */
+@media (min-width: 1025px) {
+  .app .header {
+    flex-wrap: wrap;
+  }
+  .app .header .header-title {
+    flex: 1 1 0;
+    min-width: auto; /* = largura mínima do título (cabecalho.css zerava) */
+  }
+  .app .header h1 {
+    min-width: 7em;
+  }
+  .app .header .subtitle {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    contain: inline-size; /* o subtítulo encurta; não segura a largura do título */
+  }
+}
+
+@media (max-width: 1500px) {
+  .app .header .live-detail {
+    display: none;
+  }
+}
+
+/* Celular e tablet: mesma regra — o título nunca fica mais estreito que a
+   palavra mais longa; sem espaço ("Reconectando…" é mais largo que "Ao
+   vivo"), o selo, o sino e o Menu descem para a linha de baixo em vez de
+   cobrir o título. No celular o botão Menu fica só com o ☰. */
+@media (max-width: 1024px) {
+  .app .header {
+    flex-wrap: wrap;
+  }
+  .app .header .header-title {
+    flex: 1 1 0;
+    min-width: auto;
+  }
+}
+
+@media (max-width: 640px) {
+  .app .header .btn-menu-texto {
+    display: none;
+  }
+}
+
+.app .header h1 {
+  font-size: calc(22px * var(--escala-texto));
+  font-weight: 800;
+  letter-spacing: -0.015em;
+  color: var(--text-primary);
+}
+
+.app .header .subtitle {
+  color: var(--text-muted);
+}
+
+/* A marca só aparece no cabeçalho quando a barra lateral some. */
+.h-marca {
+  display: none;
+  color: var(--accent);
+  white-space: nowrap; /* "Omni-Root" não quebra no hífen */
+}
+
+@media (max-width: 1024px) {
+  .h-marca {
+    display: inline;
+  }
+}
+
+.app .header .btn,
+.app .header .user-chip,
+.app .header .live-badge,
+.app .header .theme-btn {
+  color: var(--text-primary);
+  background: var(--surface);
+  border-color: var(--border);
+}
+
+.app .header .btn:hover:not(:disabled) {
+  background: var(--tint);
+}
+
+.app .header .live-label,
+.app .header .live-detail {
+  color: var(--text-secondary);
+}
+
+.app .header .live-ao-vivo .live-label {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.app .header .chip-link {
+  border-left-color: var(--border);
+}
+
+.app .header .export-error {
+  color: var(--status-critical);
+}
+
+/* ---- cartões brancos ---- */
+.panel,
+.filters {
+  background: var(--surface);
+  border: 0;
+  border-radius: var(--raio-cartao);
+  box-shadow: var(--sombra-cartao);
+}
+
+.panel {
+  padding: 20px 22px;
+}
+
+.panel h2 {
+  font-size: calc(16px * var(--escala-texto));
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+  padding-left: 0;
+  border-left: 0;
+}
+
+.panel .panel-sub {
+  padding-left: 0;
+  font-size: calc(13px * var(--escala-texto));
+}
+
+.filters {
+  padding: 14px 20px;
+}
+
+/* Botões e campos: cantos mais redondos, como o resto. */
+.btn,
+.filters input,
+.filters select,
+.panel-controls select {
+  border-radius: 10px;
+}
+
+.filters .presets button {
+  border-radius: 10px;
+}
+
+/* Última inspeção: ladrilhos em tom suave, sem borda. */
+.tile {
+  background: var(--tint);
+  border-color: transparent;
+  border-radius: 12px;
+}
+
+.tile-estimado {
+  border-color: var(--axis);
+}
+
+.tile-value {
+  font-weight: 750;
+  letter-spacing: -0.01em;
+}
+
+.panel-ultima {
+  background: var(--surface);
+}
+
+.ultima-status {
+  font-size: calc(17px * var(--escala-texto));
+}
+
+/* ---- indicadores do período: cartões pastel com ícone ---- */
+.cards-wrap {
+  margin-bottom: 4px;
+}
+
+.cards-titulo {
+  font-size: calc(16px * var(--escala-texto));
+  font-weight: 700;
+  color: var(--text-primary);
+  text-transform: none;
+  letter-spacing: -0.01em;
+}
+
+.cards {
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+}
+
+.card {
+  --cor-card: var(--accent);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 22px 16px 18px;
+  background: color-mix(in srgb, var(--cor-card) 11%, var(--surface));
+  border: 0;
+  border-radius: var(--raio-cartao);
+}
+
+.card-aprovado {
+  --cor-card: var(--status-good);
+}
+.card-quarentena {
+  --cor-card: var(--status-warning);
+}
+.card-reprovado {
+  --cor-card: var(--status-critical);
+}
+
+.card-icone {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  margin-bottom: 12px;
+  border-radius: 14px;
+  color: var(--cor-card);
+  background: color-mix(in srgb, var(--cor-card) 18%, var(--surface));
+}
+
+.card .card-value {
+  font-size: calc(30px * var(--escala-texto));
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.card .card-label {
+  justify-content: center;
+  margin-top: 2px;
+  font-size: calc(14px * var(--escala-texto));
+  font-weight: 650;
+  /* nome do status puxado para a cor dele, escurecido para ler bem */
+  color: color-mix(in srgb, var(--cor-card) 65%, var(--text-primary));
+}
+
+.card .card-share {
+  margin-top: 2px;
+  font-size: calc(12px * var(--escala-texto));
+}
+
+/* ---- tabela e grade ---- */
+.grid {
+  gap: 20px;
+}
+
+/* QR code da plateia (src/components/QrPlateia.tsx): no canto, acima dos
+   atalhos. O código fica sempre preto no branco — é o que a câmera do
+   celular lê melhor, nos dois temas. */
+.bl-qr {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: auto;
+  padding: 10px 14px 10px 10px;
+  font: inherit;
+  text-align: left;
+  color: var(--text-secondary);
+  background: var(--tint);
+  border: 0;
+  border-radius: 14px;
+  cursor: pointer;
+}
+
+.bl-qr:hover {
+  background: var(--tint-strong);
+}
+
+.bl-qr img {
+  flex: none;
+  width: 64px;
+  height: 64px;
+  padding: 3px;
+  background: #ffffff;
+  border-radius: 8px;
+}
+
+.bl-qr.fora img {
+  opacity: 0.35;
+}
+
+.bl-qr strong {
+  display: block;
+  color: var(--text-primary);
+  font-size: calc(13px * var(--escala-texto));
+}
+
+.bl-qr > span > span {
+  font-size: calc(12px * var(--escala-texto));
+}
+
+.bl-qr.fora > span > span {
+  color: var(--status-critical);
+}
+
+.bl-qr + .bl-dica {
+  margin-top: 0;
+}

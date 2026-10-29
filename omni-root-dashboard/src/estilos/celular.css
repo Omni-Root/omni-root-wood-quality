@@ -1,0 +1,94 @@
+/* ---- celular ---- */
+.nav-celular {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .layout {
+    padding-left: 12px;
+    padding-right: 12px;
+    /* espaço para a barra de navegação fixa no rodapé */
+    padding-bottom: 76px;
+  }
+
+  .header h1 {
+    font-size: calc(17px * var(--escala-texto));
+    white-space: normal;
+  }
+
+  .header .subtitle {
+    display: none;
+  }
+
+  /* No celular, o que importa primeiro é a última tora (o "agora"); a
+     câmera ao vivo desce. */
+  .panel-ultima {
+    order: -1;
+  }
+
+  .panel {
+    padding: 12px;
+  }
+
+  .mapa-leaflet {
+    height: 320px;
+  }
+
+  .mapa-controles {
+    align-items: stretch;
+  }
+
+  .mapa-metricas {
+    width: 100%;
+  }
+
+  .mapa-metricas .seg {
+    flex: 1;
+    padding: 9px 6px; /* alvo de toque maior */
+  }
+
+  .mapa-opcoes {
+    width: 100%;
+  }
+
+  .mapa-opcoes select {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .mapa-rodape {
+    flex-direction: column;
+  }
+
+  /* As âncoras da barra não podem esconder o título atrás do alerta fixo. */
+  .panel,
+  .cards-wrap {
+    scroll-margin-top: 12px;
+  }
+
+  .nav-celular {
+    display: flex;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1000;
+    background: var(--band);
+    border-top: 3px solid var(--jd-yellow);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .nav-celular a {
+    flex: 1;
+    text-align: center;
+    padding: 13px 4px;
+    color: var(--band-text);
+    font-size: calc(13px * var(--escala-texto));
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .nav-celular a:active {
+    background: rgba(255, 255, 255, 0.15);
+  }
+}

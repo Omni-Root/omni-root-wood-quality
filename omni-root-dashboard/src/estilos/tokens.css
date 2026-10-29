@@ -1,0 +1,124 @@
+/* ============================================================
+   PALETA — identidade John Deere
+   Verde JD (PMS 364) #367c2b e amarelo JD (PMS 109) #ffde00.
+   O verde é a cor de marca e de ação (botões, ativo, "ao vivo"); o
+   amarelo é acento raro (filete, destaque). Status continua semântico:
+   aprovado = verde JD, contenção = âmbar legível, rejeitado = vermelho.
+   Tema claro é a base; os blocos escuros só redefinem tokens.
+   ============================================================ */
+:root {
+  color-scheme: light;
+  /* Tamanho do texto (A− / A+ no cabeçalho, teclas + − 0): toda font-size
+     dos estilos é "Npx × escala". 1 = padrão. Só o texto cresce — a grade,
+     o mapa e os gráficos mantêm o layout (o zoom do navegador quebraria). */
+  --escala-texto: 1;
+  /* marca */
+  --jd-green: #367c2b;
+  --jd-green-dark: #2a5f22;
+  --jd-yellow: #ffde00;
+  --accent: var(--jd-green);
+  --accent-contrast: #ffffff;
+  /* superfícies "de marca", como no PDF: cartão verde-claro e cabeçalho de tabela verde */
+  --tint: #f3f6f1;
+  --tint-strong: #e6eee2;
+  --band: var(--jd-green);
+  --band-text: #ffffff;
+  --band-muted: #dbe9d6;
+  /* chrome & ink */
+  --page: #f4f6f2;
+  --surface: #ffffff;
+  --text-primary: #161a15;
+  --text-secondary: #4d5749;
+  --text-muted: #778072;
+  --grid: #e3e8df;
+  --axis: #c4ccbf;
+  --border: rgba(22, 26, 21, 0.1);
+  /* status (fixo, nunca tematizado): aprovado / contenção / rejeitado */
+  --status-good: #367c2b;
+  --status-warning: #d99a00;
+  --status-critical: #c0392b;
+  /* rampa sequencial VERDE (heatmap, histogramas), do mais claro ao mais escuro */
+  --seq-0: var(--grid);
+  --seq-1: #d9ecd2;
+  --seq-2: #b5d9a8;
+  --seq-3: #8dc47c;
+  --seq-4: #62ab4f;
+  --seq-5: #367c2b;
+  --seq-6: #2a5f22;
+  --seq-7: #1c4217;
+}
+
+/* ---- tema escuro ----
+   Três estados, controlados pelo botão de tema (ThemeToggle):
+     - "Sistema" (sem data-theme): segue o prefers-color-scheme do SO;
+     - "Claro"  (data-theme="light"): força claro mesmo com o SO no escuro;
+     - "Escuro" (data-theme="dark"): força escuro em qualquer caso.
+   Os mesmos tokens aparecem nos dois blocos de propósito: o primeiro cobre o
+   modo automático, o segundo a escolha manual. No escuro o verde JD sobe um
+   tom (#4c9a3f) para manter contraste sobre o fundo; o amarelo fica igual. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --accent: #4c9a3f;
+    --accent-contrast: #0b120a;
+    --tint: #1a2418;
+    --tint-strong: #213022;
+    --band: #2b5f23;
+    --band-text: #ffffff;
+    --band-muted: #cfe0c9;
+    --page: #0e120d;
+    --surface: #171d16;
+    --text-primary: #f2f5f0;
+    --text-secondary: #c2cbbd;
+    --text-muted: #8d978a;
+    --grid: #263024;
+    --axis: #384435;
+    --border: rgba(242, 245, 240, 0.1);
+    --status-good: #4c9a3f;
+    --status-warning: #f0b429;
+    --status-critical: #e05a4b;
+    --seq-1: #1f3a1b;
+    --seq-2: #27512a;
+    --seq-3: #2f6a2f;
+    --seq-4: #3b8534;
+    --seq-5: #4c9a3f;
+    --seq-6: #6fb862;
+    --seq-7: #a4d99a;
+  }
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --accent: #4c9a3f;
+  --accent-contrast: #0b120a;
+  --tint: #1a2418;
+  --tint-strong: #213022;
+  --band: #2b5f23;
+  --band-text: #ffffff;
+  --band-muted: #cfe0c9;
+  --page: #0e120d;
+  --surface: #171d16;
+  --text-primary: #f2f5f0;
+  --text-secondary: #c2cbbd;
+  --text-muted: #8d978a;
+  --grid: #263024;
+  --axis: #384435;
+  --border: rgba(242, 245, 240, 0.1);
+  --status-good: #4c9a3f;
+  --status-warning: #f0b429;
+  --status-critical: #e05a4b;
+  --seq-1: #1f3a1b;
+  --seq-2: #27512a;
+  --seq-3: #2f6a2f;
+  --seq-4: #3b8534;
+  --seq-5: #4c9a3f;
+  --seq-6: #6fb862;
+  --seq-7: #a4d99a;
+}
+
+/* "Claro" explícito: reafirma o color-scheme para o navegador não pintar
+   controles nativos (inputs de data, scrollbars) no esquema do sistema. */
+:root[data-theme='light'] {
+  color-scheme: light;
+}
+

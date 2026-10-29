@@ -1,0 +1,10 @@
+# Challenge material from the partner companies: never publish
+*.pdf
+*.xlsx
+*.xls
+
+# Editor / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

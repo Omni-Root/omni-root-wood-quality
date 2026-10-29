@@ -1,0 +1,140 @@
+/* ---- última inspeção (cartão ao vivo) ---- */
+.panel-ultima {
+  /* é o painel "vivo" da página: borda de marca e fundo levemente tingido */
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
+  background: var(--tint);
+}
+
+.panel-ultima .tile {
+  background: var(--surface);
+}
+
+.ultima {
+  animation: ultima-flash 1.6s ease-out;
+  border-radius: 8px;
+}
+
+/* Destaque ao chegar tora nova: o bloco é remontado (key = id) e pisca uma
+   vez. Nunca é a única pista — o chip "Ao vivo" e a hora também mudam. */
+@keyframes ultima-flash {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--jd-yellow) 70%, transparent);
+    background: color-mix(in srgb, var(--jd-yellow) 18%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 12px transparent;
+    background: transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ultima {
+    animation: none;
+  }
+}
+
+.ultima-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 14px;
+  margin-bottom: 12px;
+}
+
+.ultima-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: calc(15px * var(--escala-texto));
+  font-weight: 700;
+}
+
+.ultima-status .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.ultima-meta {
+  color: var(--text-secondary);
+  font-size: calc(12px * var(--escala-texto));
+}
+
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+}
+
+.tile {
+  background: var(--page);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  min-width: 0;
+}
+
+/* Estimado (densidade e o que herda dela): borda tracejada — a distinção
+   medido x estimado não depende de cor. */
+.tile-estimado {
+  border-style: dashed;
+}
+
+.tile-label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-secondary);
+  font-size: calc(12px * var(--escala-texto));
+}
+
+.tile-tag {
+  display: inline-block;
+  font-size: calc(10px * var(--escala-texto));
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--text-secondary);
+  border: 1px solid var(--axis);
+  border-radius: 999px;
+  padding: 1px 7px;
+  white-space: nowrap;
+  margin-left: 6px;
+}
+
+.tile-value {
+  font-size: calc(22px * var(--escala-texto));
+  font-weight: 650;
+  margin-top: 2px;
+  white-space: nowrap;
+}
+
+.tile-unit {
+  font-size: calc(13px * var(--escala-texto));
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.tile-sub {
+  color: var(--text-muted);
+  font-size: calc(11px * var(--escala-texto));
+  margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ultima-foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 10px;
+  color: var(--text-muted);
+  font-size: calc(11px * var(--escala-texto));
+}
+
+.ultima-foot .ultima-log {
+  margin-left: auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+

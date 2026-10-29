@@ -1,0 +1,199 @@
+/* ---- botões genéricos ---- */
+.btn {
+  font: inherit;
+  font-size: calc(13px * var(--escala-texto));
+  color: var(--text-primary);
+  background: var(--surface);
+  border: 1px solid var(--axis);
+  border-radius: 8px;
+  padding: 7px 12px;
+  cursor: pointer;
+}
+
+.btn:hover:not(:disabled) {
+  background: var(--grid);
+}
+
+.btn:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.export-menu {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.export-menu .caret {
+  margin-left: 6px;
+  font-size: calc(11px * var(--escala-texto));
+  opacity: 0.85;
+}
+
+/* Menu suspenso: superfície do tema (não o "vidro" da faixa verde), para
+   ler bem tanto no claro quanto no escuro. */
+.export-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 30;
+  min-width: 280px;
+  padding: 6px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+}
+
+.export-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  padding: 8px 10px;
+  font: inherit;
+  text-align: left;
+  color: var(--text-primary);
+  background: transparent;
+  border: 0;
+  border-radius: 7px;
+  cursor: pointer;
+}
+
+.export-item strong {
+  font-size: calc(13px * var(--escala-texto));
+}
+
+.export-item span {
+  font-size: calc(12px * var(--escala-texto));
+  color: var(--text-muted);
+}
+
+/* Título do formato à esquerda, tecla de atalho à direita. */
+.export-item .export-item-topo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  font-size: inherit;
+  color: inherit;
+}
+
+.export-item:hover,
+.export-item:focus-visible {
+  background: var(--tint-strong);
+  outline: none;
+}
+
+.export-error {
+  color: var(--status-critical);
+  font-size: calc(12px * var(--escala-texto));
+}
+
+.user-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-secondary);
+  font-size: calc(12px * var(--escala-texto));
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+/* "Sair" dentro do chip do usuário: um link discreto, não um botão a mais */
+.chip-link {
+  font: inherit;
+  font-size: calc(12px * var(--escala-texto));
+  color: inherit;
+  background: none;
+  border: 0;
+  border-left: 1px solid rgba(255, 255, 255, 0.35);
+  padding: 0 0 0 8px;
+  cursor: pointer;
+  opacity: 0.9;
+}
+
+.chip-link:hover,
+.chip-link:focus-visible {
+  text-decoration: underline;
+  opacity: 1;
+  outline: none;
+}
+
+/* ---- chip "Ao vivo" (atualização em tempo real) ---- */
+.live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: calc(12px * var(--escala-texto));
+  color: var(--text-secondary);
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-secondary);
+}
+
+.live-ao-vivo .live-dot {
+  background: var(--status-good);
+  box-shadow: 0 0 0 0 var(--status-good);
+  animation: live-pulse 2s ease-out infinite;
+}
+
+.live-reconectando .live-dot {
+  background: var(--status-warning);
+}
+
+.live-label {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.live-count {
+  background: var(--jd-yellow);
+  color: #161a15;
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: 999px;
+}
+
+@keyframes live-pulse {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--status-good) 60%, transparent);
+  }
+  70% {
+    box-shadow: 0 0 0 7px transparent;
+  }
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .live-ao-vivo .live-dot {
+    animation: none;
+  }
+}
+
+/* ---- botão de tema (claro / escuro / sistema) ---- */
+.theme-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  padding-left: 0;
+  padding-right: 0;
+  font-size: calc(15px * var(--escala-texto));
+  line-height: 1;
+}
+

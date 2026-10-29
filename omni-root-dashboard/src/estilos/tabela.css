@@ -1,0 +1,75 @@
+/* ---- tabela de qualidade por talhão ---- */
+.tabela-wrap {
+  overflow-x: auto;
+}
+
+.tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: calc(13px * var(--escala-texto));
+  min-width: 760px;
+}
+
+.tabela th,
+.tabela td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--grid);
+  text-align: left;
+  vertical-align: top;
+}
+
+.tabela th {
+  color: var(--band-text);
+  background: var(--band);
+  font-weight: 600;
+  font-size: calc(12px * var(--escala-texto));
+  white-space: nowrap;
+  border-bottom: none;
+}
+
+.tabela thead th:first-child {
+  border-radius: 6px 0 0 0;
+}
+
+.tabela thead th:last-child {
+  border-radius: 0 6px 0 0;
+}
+
+.tabela tbody tr:nth-child(even) {
+  background: var(--tint);
+}
+
+.tabela th.num,
+.tabela td.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.tabela tbody tr:hover {
+  background: var(--tint-strong);
+}
+
+.tabela .muted {
+  color: var(--text-muted);
+  font-size: calc(12px * var(--escala-texto));
+}
+
+/* ---- previsão para a fábrica (abaixo da tabela de qualidade) ---- */
+.previsao-fabrica {
+  margin-top: 20px;
+}
+
+.previsao-titulo {
+  margin: 0 0 8px;
+  font-size: calc(14px * var(--escala-texto));
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.previsao-nota {
+  margin: 8px 0 0;
+  color: var(--text-muted);
+  font-size: calc(12px * var(--escala-texto));
+  line-height: 1.45;
+}

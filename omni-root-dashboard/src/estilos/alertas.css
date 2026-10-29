@@ -1,0 +1,194 @@
+/* ---- notificações (sino da barra superior; ver Notificacoes.tsx) ----
+   O "supervisor no bolso": avisos de tendência (várias toras seguidas acima
+   do limite) num painel que abre no sino, em vez de faixas fixas cobrindo
+   o topo do painel. */
+.notif {
+  position: relative;
+}
+
+.notif-sino {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 38px;
+  height: 34px;
+  padding: 0;
+}
+
+.notif-sino.com-alerta {
+  color: var(--status-critical);
+  border-color: color-mix(in srgb, var(--status-critical) 45%, var(--border));
+}
+
+/* Contador: bolinha vermelha no canto do sino. */
+.notif-contador {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 19px;
+  height: 19px;
+  padding: 0 5px;
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+  color: #ffffff;
+  background: var(--status-critical);
+  border: 2px solid var(--surface);
+  border-radius: 999px;
+}
+
+/* Aviso novo: o sino balança uma vez (desligado com "reduzir movimento"). */
+@keyframes notif-balanca {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+  15% {
+    transform: rotate(16deg);
+  }
+  30% {
+    transform: rotate(-14deg);
+  }
+  45% {
+    transform: rotate(10deg);
+  }
+  60% {
+    transform: rotate(-6deg);
+  }
+  75% {
+    transform: rotate(3deg);
+  }
+}
+
+.notif-balanca {
+  display: inline-grid;
+  transform-origin: 50% 10%;
+  animation: notif-balanca 0.9s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .notif-balanca {
+    animation: none;
+  }
+}
+
+.notif-painel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 30;
+  width: 400px;
+  max-width: calc(100vw - 24px);
+  max-height: min(70vh, 520px);
+  overflow-y: auto;
+  padding: 6px;
+  color: var(--text-primary);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28);
+}
+
+.notif-topo {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px 10px 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.notif-topo strong {
+  font-size: calc(15px * var(--escala-texto));
+}
+
+.notif-total {
+  font-size: calc(11px * var(--escala-texto));
+  font-weight: 700;
+  color: #ffffff;
+  background: var(--status-critical);
+  border-radius: 999px;
+  padding: 2px 8px;
+}
+
+.notif-todos {
+  margin-left: auto;
+  font: inherit;
+  font-size: calc(12px * var(--escala-texto));
+  font-weight: 600;
+  color: var(--accent);
+  background: none;
+  border: 0;
+  padding: 2px 4px;
+  cursor: pointer;
+}
+
+.notif-todos:hover {
+  text-decoration: underline;
+}
+
+.notif-lista {
+  list-style: none;
+  margin: 0;
+  padding: 4px 0 0;
+}
+
+.notif-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 10px;
+}
+
+.notif-item + .notif-item {
+  border-top: 1px solid var(--border);
+}
+
+.notif-icone {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  color: var(--status-critical);
+  background: color-mix(in srgb, var(--status-critical) 14%, var(--surface));
+  font-size: calc(15px * var(--escala-texto));
+}
+
+.notif-texto {
+  flex: 1;
+  min-width: 0;
+  font-size: calc(13px * var(--escala-texto));
+  line-height: 1.45;
+}
+
+.notif-ciente {
+  flex: none;
+  font-size: calc(12px * var(--escala-texto));
+  padding: 5px 10px;
+}
+
+.notif-vazio {
+  margin: 0;
+  padding: 14px 10px 12px;
+  color: var(--text-muted);
+  font-size: calc(13px * var(--escala-texto));
+}
+
+/* Celular: o painel ocupa a largura da barra superior (o sino não fica no
+   canto, então ancorar nele cortaria o painel à esquerda). */
+@media (max-width: 640px) {
+  .notif {
+    position: static;
+  }
+  .notif-painel {
+    left: 12px;
+    right: 12px;
+    width: auto;
+    max-width: none;
+  }
+}

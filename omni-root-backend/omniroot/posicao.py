@@ -1,0 +1,693 @@
+"""
+posicao.py — posição da máquina (GNSS) para gravar junto com cada tora.
+
+A posição entra como a densidade: um dado com PROVENIÊNCIA, nunca
+obrigatório. Sem receptor, sem satélite ou com leitura velha, a tora é
+gravada normalmente, só sem coordenada (e fora do mapa).
+
+De onde vem a posição — sempre sentenças NMEA 0183, o formato que
+receptores GNSS falam há décadas:
+
+  - porta serial ("COM5", "/dev/ttyUSB0"): o GNSS da máquina, se exposto
+    em serial, ou um receptor USB. pos_fonte = "gnss_serial".
+  - arquivo (.nmea / .txt): uma trilha REAL gravada antes, reproduzida no
+    ritmo em que foi gravada e em loop — o equivalente do `--fonte video.mp4`
+    da câmera. pos_fonte = "gnss_log" (o dashboard declara isso na tela).
+  - serviço de localização do SISTEMA OPERACIONAL (no notebook da maquete,
+    que faz o papel da máquina). Sem GPS, o sistema estima pela rede Wi-Fi
+    (ou, sem Wi-Fi conhecido, pelo IP) e informa o raio de incerteza, que
+    gravamos em pos_precisao_m:
+      "windows": Localização do Windows. pos_fonte = "windows_localizacao".
+                 Precisa da Localização ligada em Configurações > Privacidade.
+      "linux":   GeoClue, o serviço de localização do Linux (o que GNOME e
+                 KDE usam), lido pelo programa where-am-i que vem com ele.
+                 pos_fonte = "linux_geoclue".
+      "sistema": escolhe sozinho o do sistema em que está rodando — o mesmo
+                 config.json vale no Windows e no Linux.
+
+Só GGA e RMC são lidas (todos os receptores mandam pelo menos uma delas).
+Sentença com checksum errado é descartada — linha serial corrompida não
+vira coordenada.
+
+A precisão NÃO é inventada: gravamos o HDOP e o número de satélites que o
+próprio receptor informa. E a coordenada é da máquina, não da árvore: a
+árvore está no alcance da grua (~10 m), o que sobra para mapa de talhão.
+
+Nada aqui depende de rede: GNSS é recebido do satélite, offline.
+"""
+
+import math
+import os
+import re
+import subprocess
+import sys
+import threading
+import time
+from pathlib import Path
+
+FONTE_SERIAL = "gnss_serial"
+FONTE_LOG = "gnss_log"
+FONTE_WINDOWS = "windows_localizacao"
+FONTE_LINUX = "linux_geoclue"
+ORIGEM_WINDOWS = "windows"  # valor de --gnss / gnss_porta / gnss_reserva: Localização do Windows
+ORIGEM_LINUX = "linux"      # ... GeoClue, a localização do Linux
+ORIGEM_SISTEMA = "sistema"  # ... a do sistema em que está rodando (windows ou linux)
+ORIGEM_AUTO = "auto"        # procura sozinho a porta serial que está falando NMEA (o COM muda de USB para USB)
+# Palavras reservadas: nunca são porta serial nem arquivo de trilha.
+ORIGENS_SERVICO = (ORIGEM_WINDOWS, ORIGEM_LINUX, ORIGEM_SISTEMA)
+
+# where-am-i: o cliente de linha de comando que vem com o GeoClue. O caminho
+# muda de distribuição para distribuição (no Debian/Ubuntu, pacote
+# geoclue-2-demo). Roda com tempo limite de 1 h e é religado ao terminar
+# (nesta versão, "-t 0" não desliga o limite: sai na hora).
+_WHERE_AM_I = (
+    "/usr/lib/geoclue-2.0/demos/where-am-i",
+    "/usr/libexec/geoclue-2.0/demos/where-am-i",
+    "/usr/lib/x86_64-linux-gnu/geoclue-2.0/demos/where-am-i",
+    "/usr/lib/aarch64-linux-gnu/geoclue-2.0/demos/where-am-i",
+)
+GEOCLUE_TEMPO_LIMITE_S = 3600
+
+
+def servico_do_sistema(plataforma: str = sys.platform) -> str | None:
+    """Qual serviço de localização "sistema" usa aqui: windows, linux ou None (sem suporte)."""
+    if plataforma == "win32":
+        return ORIGEM_WINDOWS
+    if plataforma.startswith("linux"):
+        return ORIGEM_LINUX
+    return None
+
+
+def achar_where_am_i() -> str | None:
+    for caminho in _WHERE_AM_I:
+        if os.access(caminho, os.X_OK):
+            return caminho
+    return None
+
+# Velocidades testadas na procura automática, da mais comum para a menos.
+# (Receptor USB nativo — ex. u-blox — ignora a velocidade; adaptador serial não.)
+BAUDS_PROCURA = (9600, 38400, 115200, 4800)
+
+# Lê a Localização do Windows (API System.Device, presente em todo Windows
+# 10/11 com o PowerShell 5.1) e escreve UMA linha por segundo:
+#   POS;<lat>;<lon>;<precisão em m>   |   SEM_FIX;<status>   |   NEGADO
+# Números em cultura invariante (ponto decimal), para o Python ler sem
+# depender do idioma do Windows.
+_SCRIPT_WINDOWS = r"""
+$ErrorActionPreference = 'Stop'
+Add-Type -AssemblyName System.Device
+$ci = [Globalization.CultureInfo]::InvariantCulture
+$w = New-Object System.Device.Location.GeoCoordinateWatcher([System.Device.Location.GeoPositionAccuracy]::High)
+[void]$w.TryStart($false, [TimeSpan]::FromSeconds(10))
+while ($true) {
+  $l = $w.Position.Location
+  if ($w.Permission -eq 'Denied') { $linha = 'NEGADO' }
+  elseif ($l.IsUnknown) { $linha = 'SEM_FIX;' + $w.Status }
+  else { $linha = 'POS;' + $l.Latitude.ToString('R', $ci) + ';' + $l.Longitude.ToString('R', $ci) + ';' + $l.HorizontalAccuracy.ToString('R', $ci) }
+  [Console]::Out.WriteLine($linha)
+  [Console]::Out.Flush()
+  Start-Sleep -Seconds 1
+}
+"""
+
+
+# ============================================================
+# PARSER NMEA (funções puras — testadas sem receptor)
+# ============================================================
+
+def checksum_ok(linha: str) -> bool:
+    """`$<corpo>*HH`: HH é o XOR de todos os caracteres do corpo, em hexa."""
+    linha = linha.strip()
+    if not linha.startswith("$") or "*" not in linha:
+        return False
+    corpo, _, cs = linha[1:].rpartition("*")
+    if len(cs) != 2:
+        return False
+    calculado = 0
+    for c in corpo:
+        calculado ^= ord(c)
+    try:
+        return calculado == int(cs, 16)
+    except ValueError:
+        return False
+
+
+def _graus(valor: str, hemisferio: str, digitos_graus: int) -> float | None:
+    """NMEA dá (d)ddmm.mmmm + hemisfério; devolve graus decimais com sinal (S e W negativos)."""
+    if not valor or hemisferio not in ("N", "S", "E", "W"):
+        return None
+    try:
+        graus = int(valor[:digitos_graus])
+        minutos = float(valor[digitos_graus:])
+    except ValueError:
+        return None
+    if minutos >= 60.0:
+        return None
+    decimal = graus + minutos / 60.0
+    return -decimal if hemisferio in ("S", "W") else decimal
+
+
+def _float(valor: str) -> float | None:
+    try:
+        return float(valor) if valor else None
+    except ValueError:
+        return None
+
+
+def _int(valor: str) -> int | None:
+    try:
+        return int(valor) if valor else None
+    except ValueError:
+        return None
+
+
+def ler_sentenca(linha: str) -> dict | None:
+    """
+    Interpreta UMA sentença GGA ou RMC (qualquer talker: GP, GN, GL, GA, BD).
+    Devolve None para o que não é GGA/RMC ou tem checksum errado. Para
+    GGA/RMC válida devolve {"tipo", "hora", "valida", "lat", "lon",
+    "hdop", "satelites"} — `valida=False` quando o receptor diz que não tem fix.
+    """
+    if not checksum_ok(linha):
+        return None
+    campos = linha.strip()[1:].rpartition("*")[0].split(",")
+    identificador = campos[0]
+    if len(identificador) != 5:
+        return None
+    tipo = identificador[2:]
+
+    if tipo == "GGA" and len(campos) >= 10:
+        # hora, lat, N/S, lon, E/W, qualidade (0 = sem fix), satélites, HDOP, altitude...
+        qualidade = _int(campos[6]) or 0
+        lat = _graus(campos[2], campos[3], 2)
+        lon = _graus(campos[4], campos[5], 3)
+        return {
+            "tipo": "GGA",
+            "hora": campos[1] or None,
+            "valida": qualidade > 0 and lat is not None and lon is not None,
+            "lat": lat,
+            "lon": lon,
+            "hdop": _float(campos[8]),
+            "satelites": _int(campos[7]),
+        }
+
+    if tipo == "RMC" and len(campos) >= 7:
+        # hora, status (A = válido, V = sem fix), lat, N/S, lon, E/W, ...
+        lat = _graus(campos[3], campos[4], 2)
+        lon = _graus(campos[5], campos[6], 3)
+        return {
+            "tipo": "RMC",
+            "hora": campos[1] or None,
+            "valida": campos[2] == "A" and lat is not None and lon is not None,
+            "lat": lat,
+            "lon": lon,
+            "hdop": None,
+            "satelites": None,
+        }
+    return None
+
+
+def parece_nmea(linhas: list[str], minimo: int = 2) -> bool:
+    """Pelo menos `minimo` sentenças NMEA íntegras (checksum certo): é um receptor GNSS."""
+    return sum(1 for linha in linhas if checksum_ok(linha)) >= minimo
+
+
+def procurar_porta_gnss(portas: list[str] | None = None, abrir=None, espera_s: float = 2.5) -> tuple[str, int] | None:
+    """
+    Procura a porta serial que está mandando NMEA: abre cada porta em cada
+    velocidade de BAUDS_PROCURA e escuta até `espera_s`. Devolve (porta, baud)
+    ou None. `portas`/`abrir` existem para o teste (sem hardware).
+    """
+    if portas is None:
+        from serial.tools import list_ports
+        portas = [p.device for p in list_ports.comports()]
+    if abrir is None:
+        import serial
+
+        def abrir(porta, baud):
+            return serial.Serial(porta, baud, timeout=0.5)
+
+    for porta in portas:
+        for baud in BAUDS_PROCURA:
+            try:
+                with abrir(porta, baud) as s:
+                    linhas: list[str] = []
+                    fim = time.monotonic() + espera_s
+                    while time.monotonic() < fim:
+                        bruto = s.readline()
+                        if bruto:
+                            linhas.append(bruto.decode("ascii", errors="ignore"))
+                            if parece_nmea(linhas):
+                                return porta, baud
+            except Exception:
+                break  # porta ocupada/inexistente: nenhuma velocidade vai abrir — próxima porta
+    return None
+
+
+def _segundos_do_dia(hora: str | None) -> float | None:
+    """'hhmmss.ss' -> segundos desde 00:00 (para reproduzir um log no ritmo original)."""
+    if not hora or len(hora) < 6:
+        return None
+    try:
+        return int(hora[0:2]) * 3600 + int(hora[2:4]) * 60 + float(hora[4:])
+    except ValueError:
+        return None
+
+
+# ============================================================
+# LEITOR EM THREAD
+# ============================================================
+
+class LeitorPosicao:
+    """
+    Lê NMEA numa thread própria e guarda a ÚLTIMA posição válida. O loop de
+    inspeção só chama `atual()` (não bloqueia, não toca em porta serial):
+    receptor travado ou desconectado nunca atrasa a medição da tora.
+    """
+
+    def __init__(self, origem: str, baud: int = 9600):
+        self.origem = origem
+        self.baud = baud
+        o = origem.strip().lower()
+        # Serviço de localização do sistema operacional: "windows", "linux" ou
+        # "sistema" (resolvido aqui para o do sistema em que está rodando).
+        self.e_servico = o in ORIGENS_SERVICO
+        self.servico = servico_do_sistema() if o == ORIGEM_SISTEMA else o if self.e_servico else None
+        self.e_windows = self.servico == ORIGEM_WINDOWS
+        self.e_linux = self.servico == ORIGEM_LINUX
+        self.e_auto = o == ORIGEM_AUTO
+        self.e_arquivo = not self.e_servico and not self.e_auto and Path(origem).is_file()
+        self.porta_detectada: str | None = None  # com "auto": a porta que a procura achou
+        if self.e_windows:
+            self.fonte = FONTE_WINDOWS
+        elif self.e_linux:
+            self.fonte = FONTE_LINUX
+        else:
+            self.fonte = FONTE_LOG if self.e_arquivo else FONTE_SERIAL
+        self._proc: subprocess.Popen | None = None  # PowerShell (Windows) ou where-am-i (GeoClue)
+        self._geoclue: dict = {}               # bloco "New location" do where-am-i sendo lido
+        self._lock = threading.Lock()
+        self._ultima: dict | None = None      # posição válida mais recente
+        self._recebida_em = 0.0               # time.monotonic() da última posição válida
+        self._tem_gga = False                 # receptor manda GGA: ela manda (tem HDOP/satélites)
+        self._estado = "iniciando"            # para o HUD: iniciando / sem_fix / ok / sem_receptor
+        self._parar = threading.Event()
+        self._thread: threading.Thread | None = None
+
+    # ---------- interface usada pelo main.py ----------
+
+    def iniciar(self) -> "LeitorPosicao":
+        self._thread = threading.Thread(target=self._loop, daemon=True, name="gnss")
+        self._thread.start()
+        return self
+
+    def parar(self, timeout_s: float = 2.0) -> None:
+        self._parar.set()
+        proc = self._proc
+        if proc is not None and proc.poll() is None:
+            proc.terminate()  # destrava o readline da thread e não deixa PowerShell órfão
+        if self._thread is not None:
+            self._thread.join(timeout=timeout_s)
+
+    def atual(self, validade_s: float) -> dict | None:
+        """Última posição, se tiver no máximo `validade_s` segundos; senão None."""
+        with self._lock:
+            if self._ultima is None:
+                return None
+            idade = time.monotonic() - self._recebida_em
+            if idade > validade_s and not self._vale_enquanto_vivo():
+                return None
+            return {**self._ultima, "idade_s": round(idade, 1)}
+
+    def _vale_enquanto_vivo(self) -> bool:
+        """O GeoClue só avisa quando a posição MUDA: a última vale enquanto o where-am-i estiver rodando."""
+        proc = self._proc
+        return self.e_linux and proc is not None and proc.poll() is None
+
+    def estado(self) -> str:
+        """iniciando / sem_fix / ok / sem_receptor — enviado ao dashboard quando não há posição."""
+        with self._lock:
+            return self._estado
+
+    def descricao(self, validade_s: float) -> str:
+        """Linha de HUD (só ASCII: o cv2.putText não desenha acentos)."""
+        p = self.atual(validade_s)
+        if self.e_auto:
+            rotulo = self.porta_detectada or "procurando porta"
+        else:
+            rotulo = "log gravado" if self.e_arquivo else self._nome_servico_hud() if self.e_servico else self.origem
+        if p is not None:
+            extra = ""
+            if p.get("precisao_m") is not None:
+                extra += f" | +-{p['precisao_m']:.0f} m"
+            if p.get("hdop") is not None:
+                extra += f" | HDOP {p['hdop']:.1f}"
+            if p.get("satelites") is not None:
+                extra += f" | {p['satelites']} sat"
+            return f"GNSS: {p['lat']:.5f}, {p['lon']:.5f}{extra} | {rotulo}"
+        with self._lock:
+            estado = self._estado
+        if estado == "sem_receptor":
+            if self.e_servico:
+                return f"GNSS: Localizacao {rotulo} indisponivel - toras sem posicao"
+            return f"GNSS: sem receptor ({rotulo}) - toras sem posicao"
+        if self.e_servico:
+            return f"GNSS: aguardando Localizacao {rotulo} - toras sem posicao"
+        return f"GNSS: aguardando satelites ({rotulo}) - toras sem posicao"
+
+    def _nome_servico_hud(self) -> str:
+        """Nome curto do serviço do sistema, só ASCII (HUD)."""
+        if self.e_windows:
+            return "Windows (Wi-Fi)"
+        if self.e_linux:
+            return "Linux (GeoClue)"
+        return f"do sistema ({sys.platform})"
+
+    # ---------- interno ----------
+
+    def processar_linha(self, linha: str) -> dict | None:
+        """Aplica uma linha NMEA ao estado. Público para os testes."""
+        s = ler_sentenca(linha)
+        if s is None:
+            return None
+        if s["tipo"] == "GGA":
+            self._tem_gga = True
+        elif self._tem_gga:
+            return s  # quem manda GGA tem HDOP/satélites: RMC só serviria para piorar
+        with self._lock:
+            if s["valida"]:
+                self._ultima = {
+                    "lat": round(s["lat"], 7),
+                    "lon": round(s["lon"], 7),
+                    "hdop": s["hdop"],
+                    "satelites": s["satelites"],
+                    "precisao_m": None,  # NMEA dá HDOP, não metros
+                    "fonte": self.fonte,
+                }
+                self._recebida_em = time.monotonic()
+                self._estado = "ok"
+            else:
+                # O receptor disse explicitamente que perdeu o fix: a posição
+                # antiga deixa de ser "a posição atual" na hora.
+                self._ultima = None
+                self._estado = "sem_fix"
+        return s
+
+    def processar_windows(self, linha: str) -> None:
+        """Aplica uma linha do script da Localização do Windows. Público para os testes."""
+        partes = linha.strip().split(";")
+        if partes[0] == "POS" and len(partes) == 4:
+            try:
+                lat, lon, precisao = float(partes[1]), float(partes[2]), float(partes[3])
+            except ValueError:
+                return
+            if not (-90 <= lat <= 90 and -180 <= lon <= 180):
+                return
+            with self._lock:
+                self._ultima = {
+                    "lat": round(lat, 7),
+                    "lon": round(lon, 7),
+                    "hdop": None,
+                    "satelites": None,
+                    # O Windows diz o raio de incerteza em metros; NaN = não informou
+                    "precisao_m": round(precisao, 1) if math.isfinite(precisao) and precisao > 0 else None,
+                    "fonte": self.fonte,
+                }
+                self._recebida_em = time.monotonic()
+                self._estado = "ok"
+        elif partes[0] == "SEM_FIX":
+            with self._lock:
+                self._ultima = None
+                self._estado = "sem_fix"
+        elif partes[0] == "NEGADO":
+            with self._lock:
+                self._ultima = None
+            self._mudar_estado(
+                "sem_receptor",
+                "⚠️  Localização do Windows NEGADA. Ligue em Configurações > Privacidade e segurança > "
+                "Localização (e 'Permitir que aplicativos da área de trabalho acessem sua localização'). "
+                "Toras seguem sem posição.",
+            )
+
+    def processar_geoclue(self, linha: str) -> None:
+        """
+        Aplica uma linha do where-am-i (GeoClue). Público para os testes.
+        Cada posição chega como um bloco:
+            New location:
+            Latitude:    -23.471700°
+            Longitude:   -46.579200°
+            Accuracy:    25000 meters
+            ...
+        A posição vale quando o bloco tem latitude, longitude e precisão
+        (a precisão vem sempre depois das coordenadas). Rodamos com LC_ALL=C:
+        sem isso, num sistema em português o número sai com vírgula.
+        """
+        chave, _, valor = linha.strip().partition(":")
+        if chave == "New location":
+            self._geoclue = {}
+            return
+        if chave not in ("Latitude", "Longitude", "Accuracy"):
+            return
+        # O campo inteiro tem de ser um número (com "°" ou "meters" no fim):
+        # "-23,4717°" (vírgula) é descartado, nunca lido como -23.
+        numero = re.fullmatch(r"\s*(-?\d+(?:\.\d+)?)\s*(?:°|meters?)?\s*", valor)
+        if numero is None:
+            return
+        self._geoclue[chave] = float(numero.group(1))
+        bloco = self._geoclue
+        if not {"Latitude", "Longitude", "Accuracy"} <= bloco.keys():
+            return
+        self._geoclue = {}
+        lat, lon, precisao = bloco["Latitude"], bloco["Longitude"], bloco["Accuracy"]
+        if not (-90 <= lat <= 90 and -180 <= lon <= 180):
+            return
+        with self._lock:
+            self._ultima = {
+                "lat": round(lat, 7),
+                "lon": round(lon, 7),
+                "hdop": None,
+                "satelites": None,
+                "precisao_m": round(precisao, 1) if precisao > 0 else None,
+                "fonte": self.fonte,
+            }
+            self._recebida_em = time.monotonic()
+            self._estado = "ok"
+
+    def _mudar_estado(self, estado: str, mensagem: str) -> None:
+        with self._lock:
+            mudou = self._estado != estado
+            self._estado = estado
+        if mudou:
+            print(mensagem)
+
+    def _servico_indisponivel(self) -> str | None:
+        """Por que o serviço de localização pedido não roda aqui (None = roda)."""
+        if self.servico is None:
+            return f"localização do sistema não suportada neste sistema operacional ({sys.platform})"
+        if self.e_windows and sys.platform != "win32":
+            return 'a Localização do Windows só existe no Windows (no Linux, use "linux" ou "sistema")'
+        if self.e_linux and not sys.platform.startswith("linux"):
+            return 'o GeoClue só existe no Linux (no Windows, use "windows" ou "sistema")'
+        if self.e_linux and achar_where_am_i() is None:
+            return (
+                "GeoClue não encontrado (falta o programa where-am-i). Instale o GeoClue: "
+                "no Arch, pacote geoclue; no Debian/Ubuntu, geoclue-2-demo"
+            )
+        return None
+
+    def _loop(self) -> None:
+        if self.e_servico:
+            motivo = self._servico_indisponivel()
+            if motivo:
+                # Não adianta tentar de novo a cada 3 s: avisa uma vez e para.
+                self._mudar_estado("sem_receptor", f"📡 Fonte de posição '{self.origem}' ignorada: {motivo}.")
+                return
+        while not self._parar.is_set():
+            try:
+                if self.e_windows:
+                    self._ler_windows()
+                elif self.e_linux:
+                    self._ler_geoclue()
+                elif self.e_arquivo:
+                    self._reproduzir_arquivo()
+                elif self.e_auto:
+                    self.porta_detectada = None  # (re)procura: o receptor pode ter mudado de porta
+                    achou = procurar_porta_gnss()
+                    if achou is None:
+                        raise RuntimeError("nenhuma porta serial mandando NMEA (receptor desconectado?)")
+                    self.porta_detectada, baud = achou
+                    self._ler_serial(self.porta_detectada, baud)
+                else:
+                    self._ler_serial()
+            except ImportError:
+                self._mudar_estado(
+                    "sem_receptor",
+                    "⚠️  GNSS: pacote 'pyserial' não instalado (pip install pyserial). Toras seguem sem posição.",
+                )
+                return
+            except Exception as e:  # porta sumiu, cabo solto, arquivo ilegível...
+                with self._lock:
+                    self._ultima = None
+                self._mudar_estado(
+                    "sem_receptor",
+                    f"📡 GNSS indisponível em {self.origem} ({e}). Tentando de novo a cada 3 s; toras seguem sem posição.",
+                )
+                self._parar.wait(3.0)
+
+    def _ler_serial(self, porta_nome: str | None = None, baud: int | None = None) -> None:
+        import serial  # só aqui: sem receptor configurado, o pyserial nem é necessário
+
+        porta_nome = porta_nome or self.origem
+        baud = baud or self.baud
+        with serial.Serial(porta_nome, baud, timeout=1.0) as porta:
+            print(f"🛰️  GNSS conectado em {porta_nome} ({baud} baud).")
+            with self._lock:
+                if self._estado == "sem_receptor":
+                    self._estado = "iniciando"
+            while not self._parar.is_set():
+                bruto = porta.readline()
+                if bruto:
+                    self.processar_linha(bruto.decode("ascii", errors="ignore"))
+
+    def _ler_windows(self) -> None:
+        """Roda o script da Localização do Windows num PowerShell filho e lê uma linha por segundo."""
+        print("🛰️  Posição pela Localização do Windows (Wi-Fi/rede; precisão informada pelo próprio Windows).")
+        self._proc = subprocess.Popen(
+            ["powershell", "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-Command", _SCRIPT_WINDOWS],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            stdin=subprocess.DEVNULL,
+            text=True,
+            encoding="ascii",
+            errors="ignore",
+            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+        )
+        try:
+            for linha in self._proc.stdout:
+                if self._parar.is_set():
+                    return
+                self.processar_windows(linha)
+        finally:
+            if self._proc.poll() is None:
+                self._proc.terminate()
+        if not self._parar.is_set():
+            raise RuntimeError("o PowerShell da Localização do Windows encerrou")
+
+    def _ler_geoclue(self) -> None:
+        """Roda o where-am-i do GeoClue e lê os blocos de posição que ele imprime."""
+        print("🛰️  Posição pela localização do Linux (GeoClue: Wi-Fi ou IP; precisão informada pelo próprio GeoClue).")
+        inicio = time.monotonic()
+        self._proc = subprocess.Popen(
+            [achar_where_am_i(), "-t", str(GEOCLUE_TEMPO_LIMITE_S), "-a", "8"],  # 8 = precisão máxima ("Exact")
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            stdin=subprocess.DEVNULL,
+            text=True,
+            encoding="utf-8",
+            errors="ignore",
+            env={**os.environ, "LC_ALL": "C"},  # ponto decimal, em qualquer idioma
+        )
+        try:
+            for linha in self._proc.stdout:
+                if self._parar.is_set():
+                    return
+                self.processar_geoclue(linha)
+        finally:
+            if self._proc.poll() is None:
+                self._proc.terminate()
+            self._proc.wait(timeout=5)
+        if self._parar.is_set():
+            return
+        # Saída normal depois de muito tempo = fim do tempo limite: o _loop
+        # religa na hora. Saída rápida (permissão negada, serviço parado)
+        # vira erro, e o _loop espera 3 s antes de tentar de novo.
+        if self._proc.returncode == 0 and time.monotonic() - inicio > 60:
+            return
+        with self._lock:
+            self._ultima = None
+        raise RuntimeError(
+            f"o GeoClue encerrou (código {self._proc.returncode}) — o serviço geoclue está ativo e "
+            "a localização está liberada nas configurações de privacidade?"
+        )
+
+    def _reproduzir_arquivo(self) -> None:
+        """Reproduz o log no ritmo em que foi gravado (pela hora das sentenças), em loop."""
+        print(f"🛰️  GNSS reproduzindo log gravado: {self.origem} (posição declarada como '{FONTE_LOG}').")
+        while not self._parar.is_set():
+            hora_anterior = None
+            lidas = 0
+            with open(self.origem, "r", encoding="ascii", errors="ignore") as f:
+                for linha in f:
+                    if self._parar.is_set():
+                        return
+                    s = self.processar_linha(linha)
+                    if s is None:
+                        continue
+                    lidas += 1
+                    agora = _segundos_do_dia(s["hora"])
+                    if agora is not None and hora_anterior is not None and agora != hora_anterior:
+                        # Espera o intervalo real entre as leituras (limitado:
+                        # um buraco no log não congela a reprodução).
+                        delta = agora - hora_anterior
+                        if delta < 0:
+                            delta += 86400  # virou meia-noite UTC
+                        self._parar.wait(min(max(delta, 0.0), 2.0))
+                    elif agora is None:
+                        self._parar.wait(1.0)
+                    if agora is not None:
+                        hora_anterior = agora
+            if lidas == 0:
+                raise ValueError("nenhuma sentença GGA/RMC válida no arquivo")
+
+
+# ============================================================
+# PRIORIDADE: GNSS primeiro, outra fonte de reserva
+# ============================================================
+
+class PosicaoComReserva:
+    """
+    Duas fontes ao mesmo tempo, com prioridade: vale a `principal` (o GNSS)
+    sempre que ela tem posição válida; sem fix, desconectada ou ainda
+    procurando a porta, vale a `reserva` (a Localização do Windows). Cada
+    posição continua levando a própria "fonte", então o banco e o dashboard
+    sabem se aquela tora/ponto veio do GNSS ou do Wi-Fi — nada é misturado.
+
+    Mesma interface do LeitorPosicao (atual/estado/descricao/fonte/parar):
+    o main.py e a telemetria não precisam saber que são duas.
+    """
+
+    def __init__(self, principal: LeitorPosicao, reserva: LeitorPosicao):
+        self.principal = principal
+        self.reserva = reserva
+        self._validade_s = 5.0  # a última usada em atual(); serve a `fonte`/`estado`
+
+    def iniciar(self) -> "PosicaoComReserva":
+        self.principal.iniciar()
+        self.reserva.iniciar()
+        return self
+
+    def parar(self, timeout_s: float = 2.0) -> None:
+        self.principal.parar(timeout_s)
+        self.reserva.parar(timeout_s)
+
+    def atual(self, validade_s: float) -> dict | None:
+        self._validade_s = validade_s
+        p = self.principal.atual(validade_s)
+        return p if p is not None else self.reserva.atual(validade_s)
+
+    def _em_uso(self) -> LeitorPosicao:
+        return self.principal if self.principal.atual(self._validade_s) is not None else self.reserva
+
+    @property
+    def fonte(self) -> str:
+        return self._em_uso().fonte
+
+    def estado(self) -> str:
+        return self._em_uso().estado()
+
+    def descricao(self, validade_s: float) -> str:
+        """HUD: a fonte em uso; na reserva, diz por que o GNSS não está valendo."""
+        if self.principal.atual(validade_s) is not None:
+            return self.principal.descricao(validade_s)
+        motivo = {"sem_fix": "sem fix", "sem_receptor": "sem receptor"}.get(self.principal.estado(), "aguardando")
+        return f"{self.reserva.descricao(validade_s)} [reserva: GNSS {motivo}]"

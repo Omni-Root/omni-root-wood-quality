@@ -1,0 +1,472 @@
+/* ---- mapa de qualidade ---- */
+.mapa .muted,
+.ultima-pos.muted {
+  color: var(--text-muted);
+}
+
+.mapa-controles {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.mapa-metricas {
+  display: inline-flex;
+  border: 1px solid var(--axis);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.mapa-metricas .seg {
+  font: inherit;
+  font-size: calc(12px * var(--escala-texto));
+  color: var(--text-secondary);
+  background: var(--surface);
+  border: 0;
+  border-right: 1px solid var(--axis);
+  padding: 6px 12px;
+  cursor: pointer;
+}
+
+.mapa-metricas .seg:last-child {
+  border-right: 0;
+}
+
+.mapa-metricas .seg-ativo {
+  background: var(--accent);
+  color: var(--accent-contrast);
+  font-weight: 600;
+}
+
+.mapa-opcoes {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mapa-opcoes select {
+  font: inherit;
+  font-size: calc(12px * var(--escala-texto));
+  color: var(--text-primary);
+  background: var(--page);
+  border: 1px solid var(--axis);
+  border-radius: 6px;
+  padding: 5px 6px;
+}
+
+.mapa-opcoes .btn {
+  font-size: calc(12px * var(--escala-texto));
+  padding: 5px 10px;
+}
+
+.mapa-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
+}
+
+@media (min-width: 900px) {
+  .mapa-layout {
+    grid-template-columns: minmax(0, 2.2fr) minmax(0, 1fr);
+  }
+}
+
+.mapa-area {
+  position: relative;
+  min-width: 0;
+}
+
+.mapa-leaflet {
+  height: 420px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  /* Sem mapa de fundo (offline), é este o "chão" do mapa. */
+  background: var(--tint);
+  z-index: 0;
+}
+
+.mapa-leaflet .leaflet-tooltip {
+  font-size: calc(12px * var(--escala-texto));
+  line-height: 1.45;
+}
+
+.mapa-aviso-fundo {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 500;
+  max-width: calc(100% - 120px);
+  background: var(--surface);
+  color: var(--text-secondary);
+  border: 1px solid var(--status-warning);
+  border-radius: 8px;
+  padding: 5px 10px;
+  font-size: calc(12px * var(--escala-texto));
+  text-align: center;
+}
+
+.mapa-legenda {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 14px;
+  margin-top: 8px;
+  font-size: calc(12px * var(--escala-texto));
+  color: var(--text-secondary);
+}
+
+.mapa-legenda span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.mapa-legenda .sw {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+}
+
+.sw-ok {
+  background: var(--status-good);
+}
+.sw-atencao {
+  background: var(--status-warning);
+}
+.sw-critico {
+  background: var(--status-critical);
+}
+.sw-sem {
+  border: 1px dashed var(--text-muted);
+}
+
+.mapa-alertas h3 {
+  font-size: calc(13px * var(--escala-texto));
+  margin: 0 0 8px;
+  color: var(--text-primary);
+}
+
+.mapa-alertas ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.mapa-alertas p {
+  font-size: calc(12px * var(--escala-texto));
+  margin: 6px 0 0;
+}
+
+/* "Onde agir" paginado (OndeAgir em MapaQualidade.tsx): a coluna tem a
+   altura do mapa e NUNCA estica o painel — o que não cabe vai para a
+   próxima página. */
+.mapa-alertas {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  height: 360px; /* empilhado (tela estreita): altura própria */
+}
+
+@media (min-width: 900px) {
+  .mapa-alertas {
+    /* Lado a lado com o mapa: não conta para a altura da linha da grade
+       (contain: size) e estica até a altura do mapa + legenda. */
+    height: auto;
+    contain: size;
+  }
+}
+
+.mapa-alertas-topo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.mapa-alertas-topo h3 {
+  margin: 0;
+}
+
+.paginador {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: calc(12px * var(--escala-texto));
+  font-variant-numeric: tabular-nums;
+  color: var(--text-secondary);
+}
+
+.paginador .btn {
+  padding: 2px 10px;
+  line-height: 1.3;
+}
+
+.mapa-alertas-caixa {
+  position: relative; /* referência do offsetTop dos cartões (paginação) */
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.mapa-alertas li.fora-da-pagina {
+  visibility: hidden;
+}
+
+.mapa-alertas .mapa-alertas-conta {
+  flex: none;
+  margin-top: 6px;
+}
+
+.alerta {
+  display: grid;
+  gap: 2px;
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  font-size: calc(12px * var(--escala-texto));
+  line-height: 1.4;
+  color: var(--text-primary);
+  background: var(--tint);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--text-muted);
+  border-radius: 6px;
+  padding: 7px 10px;
+  cursor: pointer;
+}
+
+.alerta:hover {
+  background: var(--tint-strong);
+}
+
+.alerta-critico {
+  border-left-color: var(--status-critical);
+}
+
+.alerta-atencao {
+  border-left-color: var(--status-warning);
+}
+
+.alerta-zona {
+  font-weight: 700;
+}
+
+.alerta-texto {
+  color: var(--text-secondary);
+}
+
+.alerta-texto strong {
+  color: var(--text-primary);
+}
+
+.mapa-rodape {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 6px 16px;
+  margin-top: 10px;
+  font-size: calc(12px * var(--escala-texto));
+  color: var(--text-secondary);
+}
+
+.tile-tag.tag-luz-critica {
+  color: var(--status-critical);
+  border-color: var(--status-critical);
+}
+
+.tile-tag.tag-demo {
+  color: var(--status-warning);
+  border-color: var(--status-warning);
+}
+
+.ultima-pos {
+  font-variant-numeric: tabular-nums;
+}
+
+/* A última tora pulsa no mapa: é onde a máquina está agora. */
+.mapa-ultima {
+  animation: mapa-pulso 1.6s ease-in-out infinite;
+}
+
+@keyframes mapa-pulso {
+  0%,
+  100% {
+    stroke-opacity: 1;
+  }
+  50% {
+    stroke-opacity: 0.25;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mapa-ultima {
+    animation: none;
+  }
+}
+
+/* ---- frota: máquinas (pelo SN) e trajeto ----
+   Máquina = pino vermelho e branco (como o do Maps), com a ponta na posição
+   e o SN ao lado; ao vivo, um "radar" pulsa no chão. As zonas são quadrados
+   translúcidos — o pino com rótulo não se confunde com elas. Sem sinal: o
+   mesmo pino mais apagado e o rótulo diz "sem sinal" (texto, não só cor).
+   A rota é azul (contínua = caminho registrado; tracejada = sem registro). */
+.frota-lista {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+  margin-bottom: 10px;
+  font-size: calc(12px * var(--escala-texto));
+}
+
+.frota-titulo {
+  font-weight: 700;
+  color: var(--text-secondary);
+  margin-right: 2px;
+}
+
+.frota-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font: inherit;
+  color: var(--text-primary);
+  background: var(--surface);
+  border: 1px solid var(--axis);
+  border-radius: 999px;
+  padding: 4px 10px;
+  cursor: pointer;
+}
+
+.frota-chip:hover:not(:disabled),
+.frota-chip:focus-visible {
+  background: var(--tint-strong);
+}
+
+.frota-chip:disabled {
+  cursor: default;
+}
+
+.frota-chip strong {
+  font-variant-numeric: tabular-nums;
+}
+
+.frota-situacao {
+  color: var(--text-secondary);
+}
+
+/* Bolinha da lista "Frota" e da legenda: vermelha com miolo branco (o pino em miniatura). */
+.frota-ponto,
+.mapa-legenda .sw-maquina {
+  display: inline-block;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff 0 28%, #e3191c 31%);
+  border: 2px solid #161a15;
+}
+
+.frota-offline .frota-ponto {
+  opacity: 0.7;
+  border-style: dashed;
+}
+
+/* Marcador no mapa (L.divIcon 30x42): a PONTA do pino é a posição; o SN ao lado da cabeça. */
+.leaflet-marker-icon.frota-marcador {
+  background: none;
+  border: 0;
+}
+
+.frota-pino {
+  position: absolute;
+  inset: 0;
+}
+
+.frota-pino svg {
+  position: relative;
+  display: block;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.45));
+}
+
+/* Ao vivo: "radar" pulsando na ponta, no chão. */
+.frota-pulso {
+  position: absolute;
+  left: 50%;
+  bottom: -5px;
+  width: 22px;
+  height: 10px;
+  margin-left: -11px;
+  border-radius: 50%;
+  background: rgba(227, 25, 28, 0.35);
+  opacity: 0;
+}
+
+.frota-online .frota-pulso {
+  animation: frota-pulso 1.6s ease-out infinite;
+}
+
+/* Sem sinal: o mesmo pino, mais apagado, e o rótulo diz "sem sinal". */
+.frota-pino.frota-offline svg {
+  opacity: 0.72;
+}
+
+.frota-rotulo {
+  position: absolute;
+  left: 32px;
+  top: 4px;
+  white-space: nowrap;
+  font-family: var(--fonte-texto, inherit);
+  font-size: calc(12px * var(--escala-texto));
+  font-weight: 800;
+  color: #161a15;
+  background: #ffffff;
+  border: 2px solid #161a15;
+  border-radius: 6px;
+  padding: 1px 7px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+}
+
+.frota-offline + .frota-rotulo {
+  color: #4a4f48;
+  border-style: dashed;
+}
+
+@keyframes frota-pulso {
+  0% {
+    transform: scale(0.4);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+/* Botão "Rota" (liga/desliga a linha do trajeto) nas opções do mapa. */
+.mapa-opcoes .btn-rota[aria-pressed='true'] {
+  background: var(--accent);
+  color: var(--accent-contrast);
+  border-color: var(--accent);
+  font-weight: 600;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .frota-online .frota-pulso {
+    animation: none;
+  }
+}
+
+/* Pular para uma seção (#mapa etc.) não pode esconder o título atrás do
+   alerta fixo no topo. No celular o alerta não é fixo (ver abaixo). */
+.panel,
+.cards-wrap {
+  scroll-margin-top: 90px;
+}
+

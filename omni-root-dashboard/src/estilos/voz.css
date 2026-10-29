@@ -1,0 +1,162 @@
+/* ---- narração (texto para voz) ---- */
+.btn-ler {
+  font-size: calc(12px * var(--escala-texto));
+  padding: 5px 10px;
+  white-space: nowrap;
+}
+
+.voz-menu {
+  position: relative;
+}
+
+.voz-split {
+  display: inline-flex;
+}
+
+.voz-split .voz-btn {
+  width: 34px;
+  padding-left: 0;
+  padding-right: 0;
+  font-size: calc(15px * var(--escala-texto));
+  line-height: 1;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.voz-split .voz-caret {
+  padding: 7px 7px;
+  font-size: calc(11px * var(--escala-texto));
+  border-left: 0;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+/* Ligada: amarelo JD, o mesmo acento do contador "+N" — sinal de estado, não decoração */
+.header .voz-btn.voz-on {
+  background: var(--jd-yellow);
+  color: #161a15;
+  border-color: var(--jd-yellow);
+}
+
+.voz-btn.voz-falando {
+  animation: voz-pulso 1s ease-in-out infinite;
+}
+
+@keyframes voz-pulso {
+  50% {
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--jd-yellow) 45%, transparent);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .voz-btn.voz-falando {
+    animation: none;
+  }
+}
+
+.voz-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 30;
+  width: 320px;
+  max-width: calc(100vw - 32px);
+  padding: 12px 14px;
+  background: var(--surface);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  display: grid;
+  gap: 10px;
+}
+
+.voz-titulo {
+  font-size: calc(13px * var(--escala-texto));
+  font-weight: 700;
+}
+
+.voz-sub {
+  margin: -4px 0 0;
+  font-size: calc(12px * var(--escala-texto));
+  color: var(--text-muted);
+}
+
+.voz-grupo {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.voz-grupo legend {
+  font-size: calc(12px * var(--escala-texto));
+  font-weight: 600;
+  color: var(--text-secondary);
+  padding: 0;
+  margin-bottom: 4px;
+}
+
+.voz-opcao {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  font-size: calc(13px * var(--escala-texto));
+  cursor: pointer;
+}
+
+.voz-opcao input {
+  margin-top: 3px;
+  accent-color: var(--accent);
+}
+
+.voz-opcao small {
+  display: block;
+  font-size: calc(11px * var(--escala-texto));
+  color: var(--text-muted);
+}
+
+.voz-campo {
+  display: grid;
+  gap: 4px;
+  font-size: calc(12px * var(--escala-texto));
+  color: var(--text-secondary);
+}
+
+.voz-campo select,
+.voz-campo input[type='range'] {
+  width: 100%;
+  font: inherit;
+  font-size: calc(12px * var(--escala-texto));
+  color: var(--text-primary);
+  background: var(--page);
+  border: 1px solid var(--axis);
+  border-radius: 6px;
+  padding: 4px 6px;
+  accent-color: var(--accent);
+}
+
+.voz-campo input[type='range'] {
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.voz-campo output {
+  float: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.voz-acoes {
+  display: flex;
+  gap: 6px;
+}
+
+/* Dentro do menu (superfície do tema) os botões voltam ao estilo normal */
+.header .voz-dropdown .btn {
+  color: var(--text-primary);
+  background: var(--surface);
+  border-color: var(--axis);
+}
+

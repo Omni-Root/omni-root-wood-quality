@@ -1,0 +1,175 @@
+{
+  "_leiame": "CACHE SINCRONIZADO AUTOMATICAMENTE do PostgreSQL central (tabela clones_densidade) pelo sync_daemon.py. NÃO edite este arquivo à mão -- as alterações serão sobrescritas na próxima sincronização. Para mudar um valor, altere na tabela do Postgres, que é a fonte de verdade. O campo 'tipo_dado' de cada clone diz de onde veio o número: 'laboratorio' (laudo real da empresa), 'literatura' (valor publicado para este clone específico) ou 'referencia_generica' (média do híbrido, ainda aguardando dado do clone).",
+  "_sincronizado_em": "2026-10-29T12:18:52",
+  "_total_clones": 17,
+  "386": {
+    "densidade_base": 490.0,
+    "densidade_min": null,
+    "densidade_max": null,
+    "unidade": "kg/m3",
+    "especie": "Urograndis",
+    "tipo_dado": "referencia_generica",
+    "fonte": "Sem densidade específica publicada encontrada. Aguardando dado de laboratório.",
+    "atualizado_em": "2026-10-27T21:23:25"
+  },
+  "58": {
+    "densidade_base": 490.0,
+    "densidade_min": null,
+    "densidade_max": null,
+    "unidade": "kg/m3",
+    "especie": "Urograndis",
+    "tipo_dado": "referencia_generica",
+    "fonte": "Sem densidade específica publicada encontrada. Aguardando dado de laboratório.",
+    "atualizado_em": "2026-10-27T21:23:25"
+  },
+  "AEC 0144": {
+    "densidade_base": 485.0,
+    "densidade_min": 460.0,
+    "densidade_max": 510.0,
+    "unidade": "kg/m3",
+    "especie": "Urograndis (híbrido espontâneo de E. urophylla)",
+    "tipo_dado": "literatura",
+    "fonte": "Mesmo material que I144 (fontes descrevem \"Clone I144 (AEC-0144)\"). Clone de domínio público segundo Embrapa CT-316.",
+    "atualizado_em": "2026-10-27T21:23:25"
+  },
+  "CLONE_A": {
+    "densidade_base": 490.0,
+    "densidade_min": null,
+    "densidade_max": null,
+    "unidade": "kg/m3",
+    "especie": "Eucalyptus sp. (clone genérico)",
+    "tipo_dado": "referencia_generica",
+    "fonte": "Clone genérico de demonstração (dados fictícios). Referência de híbrido comercial E. grandis x urophylla.",
+    "atualizado_em": "2026-10-27T21:23:25"
+  },
+  "CLONE_B": {
+    "densidade_base": 490.0,
+    "densidade_min": null,
+    "densidade_max": null,
+    "unidade": "kg/m3",
+    "especie": "Eucalyptus sp. (clone genérico)",
+    "tipo_dado": "referencia_generica",
+    "fonte": "Clone genérico de demonstração (dados fictícios).",
+    "atualizado_em": "2026-10-27T21:23:25"
+  },
+  "CLONE_C": {
+    "densidade_base": 490.0,
+    "densidade_min": null,
+    "densidade_max": null,
+    "unidade": "kg/m3",
+    "especie": "Eucalyptus sp. (clone genérico)",
+    "tipo_dado": "referencia_generica",
+    "fonte": "Clone genérico de demonstração (dados fictícios).",
+    "atualizado_em": "2026-10-27T21:23:25"
+  },
+  "CLONE_D": {
+    "densidade_base": 490.0,
+    "densidade_min": null,
+    "densidade_max": null,
+    "unidade": "kg/m3",
+    "especie": "Eucalyptus sp. (clone genérico)",
+    "tipo_dado": "referencia_generica",
+    "fonte": "Clone genérico de demonstração (dados fictícios).",
+    "atualizado_em": "2026-10-27T21:23:25"
+  },
+  "CLONE_TEST_1": {
+    "densidade_base": 490.0,
+    "densidade_min": null,
+    "densidade_max": null,
+    "unidade": "kg/m3",
+    "especie": "Eucalyptus sp. (clone de teste)",
+    "tipo_dado": "referencia_generica",
+    "fonte": "Clone de teste.",
+    "atualizado_em": "2026-10-27T21:23:25"
+  },
+  "CLONE_TEST_2": {
+    "densidade_base": 490.0,
+    "densidade_min": null,
+    "densidade_max": null,
+    "unidade": "kg/m3",
+    "especie": "Eucalyptus sp. (clone de teste)",
+    "tipo_dado": "referencia_generica",
+    "fonte": "Clone de teste.",
+    "atualizado_em": "2026-10-27T21:23:25"
+  },
+  "GG100": {
+    "densidade_base": 490.0,
+    "densidade_min": null,
+    "densidade_max": null,
+    "unidade": "kg/m3",
+    "especie": "Urograndis (E. urophylla)",
+    "tipo_dado": "referencia_generica",
+    "fonte": "Sem densidade específica publicada encontrada. Clone de domínio público (Embrapa CT-316). OBS relevante para nosso indicador de tortuosidade: a Embrapa registra que o GG100 apresenta tortuosidade de fuste. Aguardando dado de laboratório.",
+    "atualizado_em": "2026-10-27T21:23:25"
+  },
+  "H13": {
+    "densidade_base": 490.0,
+    "densidade_min": null,
+    "densidade_max": null,
+    "unidade": "kg/m3",
+    "especie": "Urograndis",
+    "tipo_dado": "referencia_generica",
+    "fonte": "Sem densidade específica publicada encontrada. Aguardando dado de laboratório.",
+    "atualizado_em": "2026-10-27T21:23:25"
+  },
+  "H15": {
+    "densidade_base": 490.0,
+    "densidade_min": null,
+    "densidade_max": null,
+    "unidade": "kg/m3",
+    "especie": "Urograndis",
+    "tipo_dado": "referencia_generica",
+    "fonte": "Sem densidade específica publicada encontrada. Aguardando dado de laboratório.",
+    "atualizado_em": "2026-10-27T21:23:25"
+  },
+  "H17": {
+    "densidade_base": 490.0,
+    "densidade_min": null,
+    "densidade_max": null,
+    "unidade": "kg/m3",
+    "especie": "Urograndis",
+    "tipo_dado": "referencia_generica",
+    "fonte": "Sem densidade específica publicada encontrada. Aguardando dado de laboratório.",
+    "atualizado_em": "2026-10-27T21:23:25"
+  },
+  "H19": {
+    "densidade_base": 490.0,
+    "densidade_min": null,
+    "densidade_max": null,
+    "unidade": "kg/m3",
+    "especie": "Urograndis",
+    "tipo_dado": "referencia_generica",
+    "fonte": "Sem densidade específica publicada encontrada. Aguardando dado de laboratório.",
+    "atualizado_em": "2026-10-27T21:23:25"
+  },
+  "I042": {
+    "densidade_base": 490.0,
+    "densidade_min": null,
+    "densidade_max": null,
+    "unidade": "kg/m3",
+    "especie": "Urograndis",
+    "tipo_dado": "referencia_generica",
+    "fonte": "Sem densidade específica publicada encontrada. Aguardando dado de laboratório.",
+    "atualizado_em": "2026-10-27T21:23:25"
+  },
+  "I144": {
+    "densidade_base": 485.0,
+    "densidade_min": 460.0,
+    "densidade_max": 510.0,
+    "unidade": "kg/m3",
+    "especie": "Urograndis (híbrido espontâneo de E. urophylla)",
+    "tipo_dado": "literatura",
+    "fonte": "Faixa 460-510 kg/m3 publicada por fontes comerciais de viveiro (mfrural, Avam Flora). NOTA: I144 e AEC 0144 parecem ser o mesmo clone -- confirmar com o contato da JD.",
+    "atualizado_em": "2026-10-27T21:23:25"
+  },
+  "VM01 (VM1)": {
+    "densidade_base": 490.0,
+    "densidade_min": null,
+    "densidade_max": null,
+    "unidade": "kg/m3",
+    "especie": "Urograndis",
+    "tipo_dado": "referencia_generica",
+    "fonte": "Sem densidade específica publicada encontrada. Aguardando dado de laboratório.",
+    "atualizado_em": "2026-10-27T21:23:25"
+  }
+}

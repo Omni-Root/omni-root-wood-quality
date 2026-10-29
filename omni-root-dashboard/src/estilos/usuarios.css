@@ -1,0 +1,296 @@
+/* Janelas de conta: "Usuários" e "Configurações" (admin) e "Minha senha". Reaproveitam o
+   fundo e o cartão da ajuda de atalhos (.ajuda-fundo / .ajuda-atalhos) e só
+   usam tokens: tema escuro, alto contraste e modo daltônico vêm junto. */
+
+.contas-janela {
+  max-width: 1040px;
+  display: grid;
+  gap: 14px;
+}
+
+.contas-estreita {
+  max-width: 440px;
+}
+
+.contas-janela section {
+  display: grid;
+  gap: 8px;
+}
+
+.contas-subtitulo {
+  margin: 4px 0 0;
+  font-size: calc(12px * var(--escala-texto));
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.contas-total {
+  font-weight: 500;
+}
+
+.contas-dica {
+  margin: 0;
+  font-size: calc(12px * var(--escala-texto));
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+.contas-ok {
+  margin: 0;
+  padding: 10px 12px;
+  font-size: calc(13px * var(--escala-texto));
+  color: var(--text-primary);
+  background: color-mix(in srgb, var(--status-good) 12%, transparent);
+  border: 1px solid var(--status-good);
+  border-radius: 12px;
+}
+
+/* ---- formulários ---- */
+.contas-form {
+  display: grid;
+  gap: 12px;
+}
+
+.contas-form label {
+  display: grid;
+  gap: 4px;
+  font-size: calc(13px * var(--escala-texto));
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.contas-janela input,
+.contas-janela select {
+  width: 100%;
+  min-width: 0;
+  font: inherit;
+  font-size: calc(14px * var(--escala-texto));
+  font-weight: 500;
+  color: var(--text-primary);
+  background: var(--page);
+  border: 1px solid var(--axis);
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
+.contas-janela input:focus,
+.contas-janela select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent);
+}
+
+.contas-janela select:disabled {
+  opacity: 0.6;
+}
+
+/* Nova conta: uma linha no computador, empilhado no celular. */
+.contas-nova {
+  grid-template-columns: minmax(180px, 1.4fr) minmax(120px, 1fr) minmax(170px, 1.2fr) minmax(140px, 1fr) auto;
+  align-items: end;
+}
+
+@media (max-width: 860px) {
+  .contas-nova {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---- botões ---- */
+.btn-primario {
+  font-weight: 700;
+  color: var(--accent-contrast);
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.btn-primario:hover:not(:disabled) {
+  background: var(--accent);
+  filter: brightness(1.08);
+}
+
+.btn-perigo {
+  color: var(--status-critical);
+  border-color: color-mix(in srgb, var(--status-critical) 55%, transparent);
+}
+
+.btn-perigo:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--status-critical) 10%, transparent);
+}
+
+/* ---- lista de contas ---- */
+/* A tabela rola dentro da janela no celular — a página nunca rola de lado. */
+.contas-tabela-rolagem {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.contas-tabela {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: collapse;
+  font-size: calc(13px * var(--escala-texto));
+}
+
+.contas-tabela th {
+  padding: 8px 10px;
+  text-align: left;
+  font-size: calc(12px * var(--escala-texto));
+  font-weight: 700;
+  color: var(--text-muted);
+  background: var(--tint);
+  border-bottom: 1px solid var(--border);
+}
+
+.contas-tabela td {
+  padding: 8px 10px;
+  vertical-align: middle;
+  border-bottom: 1px solid var(--grid);
+}
+
+.contas-tabela tr:last-child td {
+  border-bottom: 0;
+}
+
+.contas-tabela td:first-child {
+  min-width: 220px;
+}
+
+.contas-tabela td:nth-child(2) {
+  width: 175px;
+}
+
+.contas-login {
+  overflow-wrap: anywhere;
+}
+
+/* Senha e último acesso numa linha só (a tabela rola de lado no celular). */
+.contas-tabela td:nth-child(4),
+.contas-tabela td:nth-child(5) {
+  white-space: nowrap;
+}
+
+.contas-voce {
+  color: var(--text-muted);
+}
+
+.contas-nome {
+  display: block;
+  color: var(--text-muted);
+  font-size: calc(12px * var(--escala-texto));
+}
+
+.contas-inativa td:first-child,
+.contas-inativa td:nth-child(n + 4) {
+  color: var(--text-muted);
+}
+
+.contas-inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.contas-inline input {
+  flex: 1 1 160px;
+}
+
+.contas-acoes {
+  white-space: nowrap;
+}
+
+.contas-acoes .btn + .btn {
+  margin-left: 6px;
+}
+
+/* Situação: chip clicável, sempre com o texto (a cor nunca é a única pista). */
+.contas-situacao {
+  font: inherit;
+  font-size: calc(12px * var(--escala-texto));
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid;
+  cursor: pointer;
+  background: transparent;
+}
+
+.contas-situacao.ativa {
+  color: var(--status-good);
+  border-color: var(--status-good);
+  background: color-mix(in srgb, var(--status-good) 10%, transparent);
+}
+
+.contas-situacao.inativa {
+  color: var(--text-muted);
+  border-color: var(--axis);
+}
+
+.contas-situacao:disabled {
+  cursor: default;
+  opacity: 0.75;
+}
+
+/* ---- configurações ---- */
+.config-janela {
+  max-width: 760px;
+}
+
+.config-lista {
+  display: grid;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.config-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px 16px;
+  padding: 12px 14px;
+}
+
+.config-item + .config-item {
+  border-top: 1px solid var(--grid);
+}
+
+.config-texto {
+  display: grid;
+  gap: 2px;
+}
+
+.config-rotulo {
+  font-size: calc(14px * var(--escala-texto));
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.config-campo {
+  margin: 0;
+  align-items: center;
+  flex-wrap: nowrap;
+}
+
+.config-campo input {
+  width: 150px;
+  flex: none;
+}
+
+.config-unidade {
+  font-size: calc(12px * var(--escala-texto));
+  color: var(--text-muted);
+}
+
+@media (max-width: 600px) {
+  .config-item {
+    grid-template-columns: 1fr;
+  }
+
+  .config-item > .contas-situacao {
+    justify-self: start;
+  }
+}

@@ -1,0 +1,487 @@
+/* ============================================================
+   ACESSIBILIDADE (ver src/acessibilidade.ts)
+   Vem DEPOIS de tokens.css e dos estilos das áreas: os modos só
+   redefinem tokens e ajustam o que já existe.
+   ============================================================ */
+
+/* ---- painel da última inspeção na cor do resultado (sempre) ----
+   Borda grossa à esquerda + fundo levemente tingido: de longe, a banca lê
+   aprovada / contenção / rejeitada sem ler o texto. Segue os tokens, então
+   no modo daltônico vira azul / laranja / vinho junto com o resto. */
+.panel.panel-ultima {
+  transition:
+    background-color 0.3s ease,
+    border-color 0.3s ease;
+}
+
+.panel.ultima-aprovado {
+  --cor-resultado: var(--status-good);
+}
+.panel.ultima-quarentena {
+  --cor-resultado: var(--status-warning);
+}
+.panel.ultima-reprovado {
+  --cor-resultado: var(--status-critical);
+}
+
+.panel.ultima-aprovado,
+.panel.ultima-quarentena,
+.panel.ultima-reprovado {
+  border-color: color-mix(in srgb, var(--cor-resultado) 55%, var(--border));
+  border-left: 6px solid var(--cor-resultado);
+  background: color-mix(in srgb, var(--cor-resultado) 8%, var(--surface));
+}
+
+/* ============================================================
+   TEMA PARA DALTÔNICOS  (html[data-cores="daltonico"])
+   A tela INTEIRA muda, não só o status: o verde sai de tudo.
+     - status: verde / amarelo / vermelho -> azul / laranja / vinho;
+     - marca (cabeçalho, botões, títulos, barras): verde JD -> grafite,
+       com o amarelo JD de acento (amarelo é seguro para daltonismo);
+     - superfícies e rampa do mapa de calor: cinza-azulado neutro.
+   Validado com o validador de paleta (OKLab; simulação de deuteranopia,
+   protanopia e tritanopia):
+     - aprovado × rejeitado: ΔE 3,8 (indistinguível) -> 19,0 no claro e
+       13,6 no escuro (mínimo aceitável: 8), contraste >= 3:1;
+     - grafite da marca × cada status: >= 11 no claro e >= 12 no escuro
+       (o grafite é bem mais escuro/claro que o status — claridade é o
+       que todo tipo de daltonismo enxerga).
+   E a cor nunca vem sozinha: ✓ ! ✕ (abaixo).
+   ============================================================ */
+:root[data-cores='daltonico'] {
+  --jd-green: #1e252e;
+  --jd-green-dark: #11161c;
+  --accent: #1e252e;
+  --accent-contrast: #ffffff;
+  --tint: #f2f4f7;
+  --tint-strong: #e5e9ef;
+  --band: #1e252e;
+  --band-text: #ffffff;
+  --band-muted: #d3d9e1;
+  --page: #f3f5f8;
+  --surface: #ffffff;
+  --text-primary: #161a20;
+  --text-secondary: #4a5361;
+  --text-muted: #737c89;
+  --grid: #e2e6ec;
+  --axis: #c3cad4;
+  --border: rgba(22, 26, 32, 0.12);
+  --status-good: #2a78d6;
+  --status-warning: #d97a00;
+  --status-critical: #8e2a5e;
+  --seq-1: #e3e8ef;
+  --seq-2: #c7d0dc;
+  --seq-3: #a7b3c4;
+  --seq-4: #8593a8;
+  --seq-5: #64738b;
+  --seq-6: #45536b;
+  --seq-7: #2a364a;
+}
+
+/* Escuro (automático e manual): o grafite vira claro sobre fundo escuro. */
+@media (prefers-color-scheme: dark) {
+  :root[data-cores='daltonico']:not([data-theme='light']) {
+    --jd-green: #c3ccd8;
+    --jd-green-dark: #9aa5b4;
+    --accent: #c3ccd8;
+    --accent-contrast: #11151a;
+    --tint: #1a1f27;
+    --tint-strong: #212833;
+    --band: #232b36;
+    --band-text: #ffffff;
+    --band-muted: #c9d1dc;
+    --page: #0e1116;
+    --surface: #15191f;
+    --text-primary: #f1f3f6;
+    --text-secondary: #c0c7d1;
+    --text-muted: #8a93a0;
+    --grid: #242b35;
+    --axis: #364050;
+    --border: rgba(241, 243, 246, 0.1);
+    --status-good: #4f93e3;
+    --status-warning: #cc7d14;
+    --status-critical: #c2508a;
+    --seq-1: #232a35;
+    --seq-2: #2f3a4a;
+    --seq-3: #3e4b5f;
+    --seq-4: #526178;
+    --seq-5: #6b7b93;
+    --seq-6: #8e9cb2;
+    --seq-7: #b9c4d4;
+  }
+}
+
+:root[data-cores='daltonico'][data-theme='dark'] {
+  --jd-green: #c3ccd8;
+  --jd-green-dark: #9aa5b4;
+  --accent: #c3ccd8;
+  --accent-contrast: #11151a;
+  --tint: #1a1f27;
+  --tint-strong: #212833;
+  --band: #232b36;
+  --band-text: #ffffff;
+  --band-muted: #c9d1dc;
+  --page: #0e1116;
+  --surface: #15191f;
+  --text-primary: #f1f3f6;
+  --text-secondary: #c0c7d1;
+  --text-muted: #8a93a0;
+  --grid: #242b35;
+  --axis: #364050;
+  --border: rgba(241, 243, 246, 0.1);
+  --status-good: #4f93e3;
+  --status-warning: #cc7d14;
+  --status-critical: #c2508a;
+  --seq-1: #232a35;
+  --seq-2: #2f3a4a;
+  --seq-3: #3e4b5f;
+  --seq-4: #526178;
+  --seq-5: #6b7b93;
+  --seq-6: #8e9cb2;
+  --seq-7: #b9c4d4;
+}
+
+/* Bolinha de status vira selo com símbolo (data-icone = ✓ ! ✕). */
+:root[data-cores='daltonico'] .dot[data-icone] {
+  display: inline-grid;
+  place-items: center;
+  width: calc(16px * var(--escala-texto));
+  height: calc(16px * var(--escala-texto));
+  border-radius: 50%;
+  color: var(--surface);
+  font-size: calc(11px * var(--escala-texto));
+  font-weight: 800;
+  line-height: 1;
+}
+
+:root[data-cores='daltonico'] .dot[data-icone]::after {
+  content: attr(data-icone);
+}
+
+/* Legenda do mapa: o mesmo símbolo dentro de cada quadradinho. */
+:root[data-cores='daltonico'] .mapa-legenda .sw:not(.sw-sem) {
+  display: inline-grid;
+  place-items: center;
+  width: calc(15px * var(--escala-texto));
+  height: calc(15px * var(--escala-texto));
+  color: var(--surface);
+  font-size: calc(10px * var(--escala-texto));
+  font-style: normal;
+  font-weight: 800;
+  line-height: 1;
+}
+:root[data-cores='daltonico'] .mapa-legenda .sw-ok::after {
+  content: '✓';
+}
+:root[data-cores='daltonico'] .mapa-legenda .sw-atencao::after {
+  content: '!';
+}
+:root[data-cores='daltonico'] .mapa-legenda .sw-critico::after {
+  content: '✕';
+}
+
+/* ============================================================
+   LEITURA PARA DISLEXIA  (html[data-leitura="dislexia"])
+   Guia de estilo da British Dyslexia Association: fonte sem serifa e
+   de letras bem diferenciadas (OpenDyslexic, local em node_modules —
+   funciona offline), espaço maior entre letras, palavras e linhas, sem
+   itálico nem CAIXA ALTA, fundo creme em vez de branco puro.
+   ============================================================ */
+/* As fontes da identidade (títulos e números incluídos) viram OpenDyslexic. */
+:root[data-leitura='dislexia'] {
+  --fonte-texto: 'OpenDyslexic', system-ui, sans-serif;
+  --fonte-display: 'OpenDyslexic', system-ui, sans-serif;
+}
+
+:root[data-leitura='dislexia'] body,
+:root[data-leitura='dislexia'] .leaflet-container {
+  font-family: 'OpenDyslexic', system-ui, sans-serif;
+  letter-spacing: 0.03em;
+  word-spacing: 0.12em;
+  line-height: 1.65;
+}
+
+:root[data-leitura='dislexia'] * {
+  font-style: normal !important;
+  text-transform: none !important;
+}
+
+/* Fundo creme só no tema claro (no escuro o fundo já não é branco). */
+@media (prefers-color-scheme: light) {
+  :root[data-leitura='dislexia']:not([data-theme='dark']) {
+    --page: #f6f1e4;
+    --surface: #fdfaf1;
+  }
+}
+
+:root[data-leitura='dislexia'][data-theme='light'] {
+  --page: #f6f1e4;
+  --surface: #fdfaf1;
+}
+
+/* ---- menu Acessibilidade (cabeçalho) ---- */
+.acess-ponto {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-left: 6px;
+  border-radius: 50%;
+  background: var(--jd-yellow);
+  vertical-align: middle;
+}
+
+.acess-item {
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.acess-texto {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* Chave liga/desliga desenhada em CSS. */
+.acess-chave {
+  position: relative;
+  flex: none;
+  width: 32px;
+  height: 18px;
+  margin-top: 2px;
+  border-radius: 9px;
+  background: var(--axis);
+  transition: background-color 0.15s ease;
+}
+
+.acess-chave::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #ffffff;
+  transition: transform 0.15s ease;
+}
+
+.acess-item.ligado .acess-chave {
+  background: var(--accent);
+}
+
+.acess-item.ligado .acess-chave::after {
+  transform: translateX(14px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panel.panel-ultima,
+  .acess-chave,
+  .acess-chave::after {
+    transition: none;
+  }
+}
+
+/* ============================================================
+   ALTO CONTRASTE  (html[data-contraste="alto"], tecla X)
+   Claro: preto puro sobre branco. Escuro: branco sobre preto puro.
+   Todo texto e toda cor de status >= 7:1 contra o fundo (nível AAA da
+   WCAG; medido: o pior par é 7,2:1, o texto principal 21:1); bordas e
+   linhas de gráfico >= 3:1. Sem sombras nem transparências: separação por
+   borda. Vem por último no arquivo e com seletores mais específicos: vale
+   por cima do creme da dislexia; com o daltônico, usa a paleta daltônica
+   em tons fortes (blocos [data-cores] abaixo).
+   ============================================================ */
+@media (prefers-color-scheme: light) {
+  :root[data-contraste='alto']:not([data-theme='dark']) {
+    --page: #ffffff;
+    --surface: #ffffff;
+    --tint: #f0f0f0;
+    --tint-strong: #e0e0e0;
+    --text-primary: #000000;
+    --text-secondary: #1f1f1f;
+    --text-muted: #3d3d3d;
+    --grid: #8a8a8a;
+    --axis: #000000;
+    --border: #000000;
+    --jd-green: #143d10;
+    --accent: #1d4d14;
+    --accent-contrast: #ffffff;
+    --band: #143d10;
+    --band-text: #ffffff;
+    --band-muted: #e8e8e8;
+    --status-good: #1b5e20;
+    --status-warning: #7a4a00;
+    --status-critical: #9b0000;
+    --sombra-cartao: 0 0 0 2px #000000;
+  }
+}
+
+:root[data-contraste='alto'][data-theme='light'] {
+  --page: #ffffff;
+  --surface: #ffffff;
+  --tint: #f0f0f0;
+  --tint-strong: #e0e0e0;
+  --text-primary: #000000;
+  --text-secondary: #1f1f1f;
+  --text-muted: #3d3d3d;
+  --grid: #8a8a8a;
+  --axis: #000000;
+  --border: #000000;
+  --jd-green: #143d10;
+  --accent: #1d4d14;
+  --accent-contrast: #ffffff;
+  --band: #143d10;
+  --band-text: #ffffff;
+  --band-muted: #e8e8e8;
+  --status-good: #1b5e20;
+  --status-warning: #7a4a00;
+  --status-critical: #9b0000;
+  --sombra-cartao: 0 0 0 2px #000000;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-contraste='alto']:not([data-theme='light']) {
+    --page: #000000;
+    --surface: #000000;
+    --tint: #111111;
+    --tint-strong: #1c1c1c;
+    --text-primary: #ffffff;
+    --text-secondary: #f2f2f2;
+    --text-muted: #cfcfcf;
+    --grid: #7a7a7a;
+    --axis: #ffffff;
+    --border: #ffffff;
+    --jd-green: #8be07a;
+    --accent: #8be07a;
+    --accent-contrast: #000000;
+    --band: #000000;
+    --band-text: #ffffff;
+    --band-muted: #e0e0e0;
+    --status-good: #7ee07a;
+    --status-warning: #ffd23d;
+    --status-critical: #ff8a80;
+    --sombra-cartao: 0 0 0 2px #ffffff;
+  }
+}
+
+:root[data-contraste='alto'][data-theme='dark'] {
+  --page: #000000;
+  --surface: #000000;
+  --tint: #111111;
+  --tint-strong: #1c1c1c;
+  --text-primary: #ffffff;
+  --text-secondary: #f2f2f2;
+  --text-muted: #cfcfcf;
+  --grid: #7a7a7a;
+  --axis: #ffffff;
+  --border: #ffffff;
+  --jd-green: #8be07a;
+  --accent: #8be07a;
+  --accent-contrast: #000000;
+  --band: #000000;
+  --band-text: #ffffff;
+  --band-muted: #e0e0e0;
+  --status-good: #7ee07a;
+  --status-warning: #ffd23d;
+  --status-critical: #ff8a80;
+  --sombra-cartao: 0 0 0 2px #ffffff;
+}
+
+/* Alto contraste + daltônico: azul / laranja / vinho em tons fortes. */
+@media (prefers-color-scheme: light) {
+  :root[data-contraste='alto'][data-cores='daltonico']:not([data-theme='dark']) {
+    --status-good: #0b4fa3;
+    --status-warning: #8a4500;
+    --status-critical: #6b1a45;
+    --accent: #1f1f1f;
+    --band: #000000;
+  }
+}
+:root[data-contraste='alto'][data-cores='daltonico'][data-theme='light'] {
+  --status-good: #0b4fa3;
+  --status-warning: #8a4500;
+  --status-critical: #6b1a45;
+  --accent: #1f1f1f;
+  --band: #000000;
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-contraste='alto'][data-cores='daltonico']:not([data-theme='light']) {
+    --status-good: #7cc4ff;
+    --status-warning: #ffb347;
+    --status-critical: #ff9ad5;
+    --accent: #ffffff;
+  }
+}
+:root[data-contraste='alto'][data-cores='daltonico'][data-theme='dark'] {
+  --status-good: #7cc4ff;
+  --status-warning: #ffb347;
+  --status-critical: #ff9ad5;
+  --accent: #ffffff;
+}
+
+/* Estrutura (vale nos dois temas): bordas no lugar de sombras e
+   transparências, foco grosso e visível, nada "apagado". */
+:root[data-contraste='alto'] .app .header,
+:root[data-contraste='alto'] .panel,
+:root[data-contraste='alto'] .filters,
+:root[data-contraste='alto'] .barra-lateral {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+:root[data-contraste='alto'] .app .header {
+  background: var(--surface);
+  border-bottom: 2px solid var(--border);
+}
+
+:root[data-contraste='alto'] .barra-lateral {
+  border-right: 2px solid var(--border);
+}
+
+:root[data-contraste='alto'] .card,
+:root[data-contraste='alto'] .tile {
+  box-shadow: 0 0 0 2px var(--border);
+}
+
+:root[data-contraste='alto'] .btn,
+:root[data-contraste='alto'] .btn-social,
+:root[data-contraste='alto'] .filters input,
+:root[data-contraste='alto'] .filters select,
+:root[data-contraste='alto'] .login-form input {
+  border: 2px solid var(--border);
+}
+
+:root[data-contraste='alto'] *:focus-visible {
+  outline: 3px solid var(--text-primary) !important;
+  outline-offset: 2px;
+}
+
+/* O ponto amarelo do "Ao vivo" quase some sobre branco: no alto
+   contraste ele usa o acento (verde escuro / verde claro). */
+:root[data-contraste='alto'] .live-ao-vivo .live-dot {
+  background: var(--accent) !important;
+  box-shadow: none !important;
+}
+
+:root[data-contraste='alto'] .chip-link,
+:root[data-contraste='alto'] .notif-todos {
+  text-decoration: underline;
+}
+
+/* Medido pelo varredor de contraste: o fundo levemente tingido da última
+   inspeção derrubava o nome do status para 6,9:1 (claro); fundo puro. */
+:root[data-contraste='alto'] .panel.ultima-aprovado,
+:root[data-contraste='alto'] .panel.ultima-quarentena,
+:root[data-contraste='alto'] .panel.ultima-reprovado {
+  background: var(--surface);
+}
+
+/* Contador do sino e "N novos": texto branco sobre o vermelho, que no
+   escuro vira rosa claro (1,9-2,3:1). Usa a cor do fundo (preto no
+   escuro, branco no claro): sempre o oposto do vermelho daquele tema. */
+:root[data-contraste='alto'] .notif-contador,
+:root[data-contraste='alto'] .notif-total {
+  color: var(--surface);
+  border-color: var(--surface);
+}

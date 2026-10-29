@@ -1,0 +1,13 @@
+{
+  "name": "Omni-Root · Qualidade da Madeira",
+  "short_name": "Omni-Root",
+  "description": "Qualidade da madeira tora a tora: última inspeção, mapa de qualidade e alertas para o supervisor de campo.",
+  "lang": "pt-BR",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0e120d",
+  "theme_color": "#367c2b",
+  "icons": [
+    { "src": "/icone.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

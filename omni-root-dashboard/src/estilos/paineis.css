@@ -1,0 +1,225 @@
+/* ---- grade de painéis ---- */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 16px;
+}
+
+.panel {
+  grid-column: span 12;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.panel h2 {
+  font-size: calc(14px * var(--escala-texto));
+  font-weight: 700;
+  margin: 0 0 2px;
+  padding-left: 10px;
+  border-left: 3px solid var(--jd-yellow);
+  color: var(--accent);
+  line-height: 1.25;
+}
+
+.panel .panel-sub {
+  padding-left: 13px;
+}
+
+.panel .panel-sub {
+  color: var(--text-muted);
+  font-size: calc(12px * var(--escala-texto));
+  margin: 0 0 12px;
+}
+
+@media (min-width: 900px) {
+  .panel.half {
+    grid-column: span 6;
+  }
+  .panel.third {
+    grid-column: span 4;
+  }
+  .panel.two-thirds {
+    grid-column: span 8;
+  }
+}
+
+/* ---- cartões de resumo ---- */
+.cards-wrap {
+  grid-column: span 12;
+}
+
+.cards-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.cards-titulo {
+  font-size: calc(12px * var(--escala-texto));
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 16px;
+}
+
+.card {
+  position: relative;
+  background: var(--tint);
+  border: 1px solid var(--border);
+  border-left: 5px solid var(--accent);
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+
+.card .card-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-secondary);
+  font-size: calc(12px * var(--escala-texto));
+}
+
+.card .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex: none;
+}
+
+.card .card-value {
+  font-size: calc(28px * var(--escala-texto));
+  font-weight: 700;
+  margin-top: 2px;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.card .card-share {
+  color: var(--text-muted);
+  font-size: calc(12px * var(--escala-texto));
+}
+
+/* ---- estados vazio / erro / carregando ---- */
+.empty,
+.loading {
+  display: grid;
+  place-items: center;
+  min-height: 180px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.error-banner {
+  background: var(--surface);
+  border: 1px solid var(--status-critical);
+  color: var(--text-primary);
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+}
+
+.error-banner strong {
+  color: var(--status-critical);
+}
+
+/* ---- heatmap ---- */
+.heatmap-wrap {
+  overflow-x: auto;
+}
+
+.heatmap {
+  display: grid;
+  grid-template-columns: 42px repeat(24, minmax(20px, 1fr));
+  gap: 2px; /* espaçador de 2px entre células, como entre marcas adjacentes */
+  align-items: stretch;
+  min-width: 640px;
+}
+
+.heatmap .hm-corner {
+  grid-column: 1;
+}
+
+.heatmap .hm-hour,
+.heatmap .hm-dow {
+  color: var(--text-muted);
+  font-size: calc(11px * var(--escala-texto));
+  align-self: center;
+}
+
+.heatmap .hm-dow {
+  padding-right: 6px;
+  text-align: right;
+}
+
+.heatmap .hm-cell {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  border-radius: 3px;
+  min-width: 20px;
+}
+
+.heatmap .hm-cell:hover {
+  outline: 2px solid var(--text-primary);
+  outline-offset: 1px;
+  z-index: 1;
+}
+
+.hm-legend {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  color: var(--text-muted);
+  font-size: calc(11px * var(--escala-texto));
+}
+
+.hm-legend .hm-step {
+  width: 18px;
+  height: 10px;
+  border-radius: 2px;
+}
+
+.hm-toggles {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 12px;
+  color: var(--text-secondary);
+  font-size: calc(12px * var(--escala-texto));
+}
+
+.hm-toggles label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+/* ---- controles pequenos de painel ---- */
+.panel-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.panel-controls select {
+  font: inherit;
+  font-size: calc(12px * var(--escala-texto));
+  color: var(--text-primary);
+  background: var(--page);
+  border: 1px solid var(--axis);
+  border-radius: 6px;
+  padding: 4px 6px;
+}
+

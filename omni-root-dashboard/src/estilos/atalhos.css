@@ -1,0 +1,404 @@
+/* ---- tamanho do texto (A− 100% A+ no cabeçalho) ---- */
+.tamanho-texto {
+  display: inline-flex;
+}
+
+.tamanho-texto .btn {
+  border-radius: 0;
+  padding-left: 9px;
+  padding-right: 9px;
+  font-weight: 700;
+}
+
+.tamanho-texto .btn + .btn {
+  margin-left: -1px; /* bordas coladas: um controle só */
+}
+
+.tamanho-texto .btn:first-child {
+  border-radius: 8px 0 0 8px;
+}
+
+.tamanho-texto .btn:last-child {
+  border-radius: 0 8px 8px 0;
+}
+
+.tamanho-texto .tamanho-pct {
+  min-width: 52px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* No padrão, o "100%" desabilitado é informação, não botão apagado. */
+.tamanho-texto .tamanho-pct:disabled {
+  opacity: 1;
+}
+
+/* ---- painel recolhível ---- */
+/* Título (+ ações) à esquerda, ocupando o que sobra; o ▾ preso no canto
+   superior direito, centrado na linha do título em qualquer tamanho de
+   texto (linha do h2 = 14px × escala × 1,25; botão = 30px). */
+.secao-topo {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.secao-topo > .panel-controls {
+  flex: 1;
+  min-width: 0;
+}
+
+.secao-topo > .btn-recolher {
+  margin-top: calc((14px * var(--escala-texto) * 1.25 - 30px) / 2);
+  margin-right: -6px;
+}
+
+.btn-recolher {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  font: inherit;
+  font-size: calc(16px * var(--escala-texto));
+  line-height: 1;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.btn-recolher:hover {
+  color: var(--text-primary);
+  border-color: var(--border);
+}
+
+.btn-recolher span {
+  transition: transform 0.15s ease;
+}
+
+.panel.recolhida .btn-recolher span {
+  transform: rotate(-90deg);
+}
+
+.panel.recolhida {
+  /* Na grade, um painel recolhido ao lado de outro aberto esticaria até a
+     altura do vizinho (caixa vazia); assim fica só com o título. */
+  align-self: start;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.panel.recolhida h2 {
+  margin-bottom: 0;
+}
+
+.btn-recolher:focus-visible,
+.btn-atalhos:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ---- destaque ao pular para uma seção (teclas 1–8) ---- */
+/* O contorno fica numa camada própria (::after), não no painel: o painel
+   já tem a animação de entrada da página (identidade.css) e trocar a
+   `animation` dele faria a entrada se repetir a cada atalho. Contorno por
+   dentro (inset): o destaque da última inspeção corta o que vaza. */
+@keyframes destaque-atalho {
+  0%,
+  60% {
+    box-shadow: inset 0 0 0 3px var(--jd-yellow);
+  }
+  100% {
+    box-shadow: inset 0 0 0 3px transparent;
+  }
+}
+
+.destaque-atalho {
+  position: relative;
+}
+
+.destaque-atalho::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  border-radius: inherit;
+  pointer-events: none;
+  animation: destaque-atalho 1.5s ease-out forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .destaque-atalho::after {
+    animation: none;
+    box-shadow: inset 0 0 0 3px var(--jd-yellow);
+  }
+  .btn-recolher span {
+    transition: none;
+  }
+}
+
+/* ---- aviso curto de cada atalho ("Texto 130%") ---- */
+.aviso-atalho {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  z-index: 2000;
+  transform: translate(-50%, 8px);
+  padding: 8px 16px;
+  font-size: calc(14px * var(--escala-texto));
+  font-weight: 600;
+  color: var(--text-primary);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--jd-yellow);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.aviso-atalho.visivel {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+/* ---- ajuda das teclas de atalho ---- */
+.ajuda-fundo {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.ajuda-atalhos {
+  width: 100%;
+  max-width: 760px;
+  max-height: calc(100vh - 32px);
+  overflow: auto;
+  padding: 20px;
+  color: var(--text-primary);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.35);
+}
+
+.ajuda-topo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.ajuda-topo h2 {
+  margin: 0;
+  font-size: calc(18px * var(--escala-texto));
+  color: var(--accent);
+}
+
+.ajuda-grupos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 8px 20px;
+}
+
+.ajuda-grupos h3 {
+  margin: 8px 0 6px;
+  font-size: calc(12px * var(--escala-texto));
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.ajuda-grupos dl {
+  margin: 0;
+}
+
+.ajuda-linha {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 4px 0;
+}
+
+.ajuda-linha dt {
+  flex: none;
+  min-width: 34px;
+}
+
+.ajuda-linha dd {
+  margin: 0;
+}
+
+kbd {
+  display: inline-block;
+  min-width: 24px;
+  padding: 1px 6px;
+  font-family: inherit;
+  font-size: calc(12px * var(--escala-texto));
+  font-weight: 700;
+  text-align: center;
+  color: var(--text-primary);
+  background: var(--tint);
+  border: 1px solid var(--axis);
+  border-bottom-width: 2px;
+  border-radius: 5px;
+}
+
+/* Celular: sem teclado físico — o botão de atalhos sai; o aviso sobe acima
+   da barra de navegação do rodapé. */
+@media (max-width: 640px) {
+  .btn-atalhos {
+    display: none;
+  }
+  .aviso-atalho {
+    bottom: 84px;
+  }
+}
+
+/* ---- texto ampliado (A+) e modo dislexia em tela estreita ----
+   Com o texto em 150-175% ou a fonte larga da dislexia, controles que
+   cabiam numa linha passavam da largura do celular: encolhem ou quebram
+   de linha em vez de vazar. */
+.filters label {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.filters select,
+.filters input {
+  max-width: 100%;
+  min-width: 0;
+}
+
+.panel-opcoes,
+.cards-head,
+.filters .presets {
+  flex-wrap: wrap;
+}
+
+.mapa-metricas .seg {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* QR code da plateia em tela cheia (tecla Q): para projetar no telão. */
+.qr-fundo {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.78);
+}
+
+.qr-cartao {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  max-height: calc(100vh - 32px);
+  overflow: auto;
+  padding: 24px 32px;
+  text-align: center;
+  color: var(--text-primary);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.35);
+}
+
+.qr-cartao h2 {
+  margin: 0;
+  font-size: calc(26px * var(--escala-texto));
+}
+
+.qr-cartao img {
+  width: min(52vh, 42vw);
+  height: min(52vh, 42vw);
+  padding: 8px;
+  background: #ffffff;
+  border-radius: 12px;
+}
+
+.qr-url {
+  margin: 0;
+  font-size: calc(20px * var(--escala-texto));
+  font-weight: 700;
+  color: var(--accent);
+  overflow-wrap: anywhere;
+}
+
+.qr-dica,
+.qr-aviso {
+  margin: 0;
+  font-size: calc(15px * var(--escala-texto));
+  color: var(--text-secondary);
+}
+
+.qr-aviso {
+  color: var(--status-critical);
+  font-weight: 600;
+}
+
+/* Código à esquerda, orientações à direita (empilha em tela estreita). */
+.qr-corpo {
+  display: grid;
+  grid-template-columns: auto minmax(0, 38ch);
+  align-items: center;
+  gap: 32px;
+  text-align: left;
+}
+
+.qr-codigo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+}
+
+.qr-passos {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin: 0;
+  padding-left: 1.4em;
+  font-size: calc(18px * var(--escala-texto));
+  line-height: 1.4;
+  color: var(--text-secondary);
+}
+
+.qr-passos strong {
+  color: var(--text-primary);
+}
+
+.qr-passos li::marker {
+  font-weight: 800;
+  color: var(--accent);
+}
+
+@media (max-width: 760px) {
+  .qr-corpo {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+  .qr-cartao img {
+    width: min(60vw, 40vh);
+    height: min(60vw, 40vh);
+  }
+  .qr-passos {
+    font-size: calc(15px * var(--escala-texto));
+  }
+}
