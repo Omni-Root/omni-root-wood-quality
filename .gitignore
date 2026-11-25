@@ -8,3 +8,11 @@
 .vscode/
 .DS_Store
 Thumbs.db
+
+# Video generator: generated files and recorded clips
+video/.venv/
+video/build/
+video/clips/
+video/*.mp4
+video/musica.*
+video/

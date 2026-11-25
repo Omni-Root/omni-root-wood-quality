@@ -10,15 +10,26 @@
 #   3. docker compose up -d
 #   4. python sync_daemon.py
 #
-# Na PRIMEIRA subida (volume vazio), o Postgres roda sozinho o único
-# script do banco central, "Banco de dados/setup_completo.sql" (schema +
-# seed + densidade por clone + trigger de tempo real). Para aplicar
-# mudanças num banco que já está de pé, veja o cabeçalho do próprio SQL.
+# Na PRIMEIRA subida (volume vazio), o Postgres roda sozinho:
+#   01 "Banco de dados/setup_completo.sql" — schema, seed, densidade por
+#      clone, trigger de tempo real, contas e configurações;
+#   02 "Banco de dados/02_papeis.sh" — cria o login Postgres restrito do
+#      dashboard (PG_CONTAS_USER / PG_CONTAS_PASSWORD deste .env, que
+#      precisam ser IGUAIS aos do .env do dashboard).
+# Para aplicar mudanças num banco que já está de pé, veja o cabeçalho do
+# próprio SQL; o 02 também pode ser rodado de novo a qualquer momento:
+#   docker compose exec postgres /docker-entrypoint-initdb.d/02_papeis.sh
+#
+# Nome do projeto e do volume FIXOS: sem isso o Docker usa o nome da pasta,
+# e renomear a pasta criava um banco novo e vazio (o antigo ficava
+# esquecido num volume com o nome velho).
 #
 # ATENÇÃO: esses scripts SÓ rodam quando o volume é criado do zero. Se
 # você já tinha subido antes e quer recomeçar limpo:
 #   docker compose down -v && docker compose up -d
 # (o -v apaga o volume; é banco de teste, sem problema)
+
+name: omniroot
 
 services:
   postgres:
@@ -29,11 +40,14 @@ services:
       POSTGRES_USER: ${PG_USER:-postgres}
       POSTGRES_PASSWORD: ${PG_PASSWORD:-omniroot_dev_local}
       POSTGRES_DB: ${PG_DBNAME:-desafio_madeira}
+      PG_CONTAS_USER: ${PG_CONTAS_USER:-}
+      PG_CONTAS_PASSWORD: ${PG_CONTAS_PASSWORD:-}
     ports:
       - "${PG_PORT:-5432}:5432"
     volumes:
       - omniroot_pg_data:/var/lib/postgresql/data
       - ./Banco de dados/setup_completo.sql:/docker-entrypoint-initdb.d/01_setup.sql:ro
+      - ./Banco de dados/02_papeis.sh:/docker-entrypoint-initdb.d/02_papeis.sh:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${PG_USER:-postgres} -d ${PG_DBNAME:-desafio_madeira}"]
       interval: 5s
@@ -42,3 +56,4 @@ services:
 
 volumes:
   omniroot_pg_data:
+    name: omniroot_pg_data

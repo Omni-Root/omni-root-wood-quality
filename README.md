@@ -11,9 +11,6 @@ Omni-Root inspects logs in real time with a camera mounted on the harvester head
 
 > 📹 Demo video: _coming soon_
 
-**Team of 5 · 4th-year Computer Engineering (FIAP).**
-**My role — lead developer:** I designed and built a good part of the field system (computer vision pipeline, measurements, log event tracking, offline storage and sync, GNSS integration, CPU optimisation) and a large part of the dashboard.
-
 ---
 
 ## The problem
