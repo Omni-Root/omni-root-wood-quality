@@ -437,7 +437,7 @@ Machine and stand identity, clone, paths, AI thresholds (`conf_threshold`,
 | `data/clones_densidade.json` | Cache of the density-per-clone table (with documented sources) |
 | `data/inventario.json` | **Synthetic** forest inventory (DBH samples and age per clone) used as dendrometric context |
 | `Banco de dados/` | `setup_completo.sql` (the only Postgres script: schema + seed + density + trigger, idempotent) and `schema_sqlite.sql` (the machine's local database) |
-| `models/` | YOLO weights (`wood_best.pt`, not in Git) and training evaluation images |
+| `models/` | YOLO weights (`wood_best.pt`, not in Git: place it here) and the CPU export |
 | `tests/` | Hardware-free tests (section 3) |
 | `OmniRoot_Challenge_Vscode_Desktop.ipynb` | Model training notebook |
 | `docker-compose.yml` | Local PostgreSQL to test `sync_daemon.py` and the dashboard |
@@ -541,8 +541,6 @@ mass and radial cracks. The model covers knots and surface defects.
   `knot_with_crack`, `Knot_missing`, `Crack`).
 - **Validation (source domain, 8 classes):** precision 0.755, recall 0.645,
   mAP@50 0.718, mAP@50-95 0.402 — read from the `wood_best.pt` checkpoint.
-  *(`models/training_summary.png` and `validation_samples.png` are from an
-  earlier single-class `wood_defect` model and do not reflect these weights.)*
 - **Inference:** grayscale + CLAHE (identical to training), OpenVINO INT8 at
   640 px on CPU, per-class thresholds and post-inference filters (inside the
   contour, minimum area, persistence).
