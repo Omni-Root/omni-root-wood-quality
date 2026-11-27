@@ -90,7 +90,7 @@ Node — allow it on private networks.
 
 ## 6. (Optional) Local database, without the central one
 
-In `../Omni-Root_challenge_2026`, `docker compose up -d` starts PostgreSQL and
+In `../omni-root-backend`, `docker compose up -d` starts PostgreSQL and
 applies `Banco de dados/setup_completo.sql` (the only database script). To get
 data, run `main.py` (or `tests/simular_cenario.py`, no camera needed) and
 `sync_daemon.py` there.

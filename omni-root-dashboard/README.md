@@ -2,7 +2,7 @@
 
 **Read-only** web interface that shows, analyses and exports the log
 inspections produced by the computer vision pipeline in
-[`../Omni-Root_challenge_2026`](../Omni-Root_challenge_2026)
+[`../omni-root-backend`](../omni-root-backend)
 (FIAP × John Deere Innovation Challenge 2026, with Suzano and Eldorado Brasil —
 **2nd place out of 9 finalist teams** at FIAP NEXT 2026).
 
@@ -23,7 +23,7 @@ The system has **two parts** that communicate through a single shared
 PostgreSQL — there are no direct code calls between them:
 
 ```
-  Omni-Root_challenge_2026 (field machine)           THIS FOLDER
+  omni-root-backend (field machine)                  THIS FOLDER
  ┌──────────────────────────────────────────┐      ┌──────────────────────┐
  │ main.py                                   │      │ Dashboard            │
  │  camera → YOLO → indicators               │      │  Express + React     │
@@ -353,7 +353,7 @@ npm run typecheck
 
 ## 10. No access to the central database? Local database
 
-`docker compose up -d` in `../Omni-Root_challenge_2026` starts PostgreSQL and
+`docker compose up -d` in `../omni-root-backend` starts PostgreSQL and
 applies `Banco de dados/setup_completo.sql` (the **only** database script:
 schema, seed, density per clone, position columns and real-time trigger;
 idempotent). To get data, run `main.py` (or `tests/simular_cenario.py`, no

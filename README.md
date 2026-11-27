@@ -6,7 +6,7 @@ Omni-Root inspects logs in real time with a camera mounted on the harvester head
 
 | Folder | What it is |
 |---|---|
-| [`Omni-Root_challenge_2026/`](Omni-Root_challenge_2026) | Field unit (Python): camera, computer vision, GNSS, local SQLite and sync daemon |
+| [`omni-root-backend/`](omni-root-backend) | Field unit (Python): camera, computer vision, GNSS, local SQLite and sync daemon |
 | [`omni-root-dashboard/`](omni-root-dashboard) | Dashboard (TypeScript): Express API + React UI over the central PostgreSQL |
 
 > 📹 Demo video: _coming soon_
